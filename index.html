@@ -366,7 +366,7 @@ const GLOSSARY = {
   breakout: ["Breakout", "The price closed higher than its highest close of the last 20 trading days. Buyers pushed it past a level that had held it back."],
   bounce: ["Oversold bounce", "The stock fell hard (RSI under 30) and today closed higher. Sometimes a sharp drop snaps back."],
   volume: ["Volume", "How many shares traded today compared with a normal day. A move on high volume (1.5× or more) means many people are behind it."],
-  mood: ["Market mood", "Is the whole market (KSE-100 or S&P 500) above its 20-day average and up today? Most stocks follow the market, so trades go better in a friendly market."],
+  mood: ["Market mood", "Is the whole market above its 20-day average and up today? For US this is the S&P 500. For PSX it is the KSE-100 when available, otherwise the average of the large stocks the scanner tracks. Most stocks follow the market, so trades go better in a friendly market."],
   liquid: ["Easy to buy and sell (liquidity)", "How much money trades in this stock on an average day. Thinly traded stocks are hard to sell quickly at a fair price."],
   odds: ["Odds favour you", "The simulator replays the next days thousands of times. It weighs how often the target comes first by how much more the target pays than the stop costs. If, on average, you come out ahead, this passes."],
   stop: ["Stop-loss", "The price where you sell to cut a loss. Decide it before you buy and never move it lower. In a fast market the actual sale can happen a bit below it."],
@@ -410,7 +410,7 @@ function renderMood(){
   const e = {green:"🟢", yellow:"🟡", red:"🔴"}[m.light];
   $("mood").innerHTML = `<div class="big">${e}</div><div style="flex:1"><b>${term("mood","Market mood")}: ${m.label}</b>
      <div class="small muted">${esc(m.name)} is ${m.change_pct >= 0 ? "up" : "down"} ${Math.abs(m.change_pct).toFixed(2)}% today and ${m.above_avg ? "above" : "below"} its 20-day average.</div></div>
-     <div class="price"><div><b>${num(m.level, 0)}</b></div><div class="small ${cls(m.change_pct)}">${pct(m.change_pct)}</div></div>`;
+     <div class="price">${m.level != null ? `<div><b>${num(m.level, 0)}</b></div>` : ""}<div class="small ${cls(m.change_pct)}">${pct(m.change_pct)}</div></div>`;
 }
 function spark(vals, w=84, h=26){
   if (!vals || vals.length < 2) return "";
