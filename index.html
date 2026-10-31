@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stock Scanner</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2a78d6">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{
+  --bg:#f4f4f2; --surface:#fcfcfb; --surface-2:#f0efec; --line:#e2e1dc;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#7a7974;
+  --good:#0ca30c; --warn:#fab219; --bad:#d03b3b; --none:#a3a29c;
+  --good-ink:#0a7a0a; --bad-ink:#b42f2f; --accent:#2a78d6; --series:#2a78d6;
+  --good-bg:#e9f6e9; --warn-bg:#fff5df; --bad-bg:#fbeaea; --none-bg:#f0efec;
+  --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121211; --surface:#1a1a19; --surface-2:#242422; --line:#33332f;
+    --ink:#f0efec; --ink-2:#c3c2b7; --ink-3:#8f8e86;
+    --good-ink:#4cc94c; --bad-ink:#f07a7a; --accent:#3987e5; --series:#3987e5;
+    --good-bg:#16301a; --warn-bg:#3a2f12; --bad-bg:#3a1a1a; --none-bg:#262624; --none:#6d6c66;
+    --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:860px;margin:0 auto;padding:0 14px 90px}
+header{position:sticky;top:0;z-index:20;background:var(--bg);padding:12px 0 8px}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;margin:0;flex:1;letter-spacing:-.01em}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:8px;color:var(--ink-2);font-weight:600}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.btn{border:0;border-radius:10px;padding:9px 14px;font-weight:600;background:var(--surface-2);color:var(--ink)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.danger{background:var(--bad);color:#fff}
+.btn:disabled{opacity:.55;cursor:default}
+.updated{font-size:12.5px;color:var(--ink-3);margin-top:6px}
+.banner{border-radius:10px;padding:9px 12px;margin:6px 0;font-size:13.5px}
+.banner.demo{background:var(--warn-bg)}
+.banner.err{background:var(--bad-bg)}
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin:10px 0}
+.mood{display:flex;gap:12px;align-items:center}
+.mood .big{font-size:26px}
+.mood b{font-size:16px}
+.muted{color:var(--ink-2)} .small{font-size:13px} .tiny{font-size:12px;color:var(--ink-3)}
+nav.tabs{display:flex;gap:4px;margin:12px 0 4px;border-bottom:1px solid var(--line)}
+nav.tabs button{border:0;background:none;padding:10px 12px;color:var(--ink-2);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:13px;color:var(--ink-2)}
+.chip.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.pick{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;cursor:pointer;padding:12px 14px}
+.pick:hover{outline:2px solid var(--line)}
+.sig{display:inline-flex;align-items:center;gap:5px;border-radius:8px;padding:4px 9px;font-weight:700;font-size:12.5px;white-space:nowrap}
+.sig.BUY,.sig.HOLD-good{background:var(--good-bg)} .sig.WAIT{background:var(--warn-bg)}
+.sig.AVOID,.sig.SELL{background:var(--bad-bg)} .sig.NO_TRADE,.sig.HOLD{background:var(--none-bg)}
+.sym{font-weight:700;font-size:16px}
+.price{text-align:right;font-variant-numeric:tabular-nums}
+.up{color:var(--good-ink)} .down{color:var(--bad-ink)}
+.reason{grid-column:1/-1;font-size:13.5px;color:var(--ink-2)}
+.spark{display:block}
+.more{width:100%;margin:6px 0}
+.wl{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.wl .chip button{border:0;background:none;color:var(--ink-3);padding:0 0 0 4px}
+.wl input{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 11px;width:110px;font:inherit;font-size:13px;text-transform:uppercase}
+.term{border-bottom:1px dotted var(--ink-3);cursor:help}
+/* sheet */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;display:none}
+.overlay.on{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;max-height:92vh;overflow:auto;background:var(--surface);border-radius:18px 18px 0 0;padding:16px 16px 28px;display:none}
+.sheet.on{display:block;animation:up .2s ease}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@media (min-width:700px){.sheet{left:50%;width:640px;margin-left:-320px;bottom:auto;top:5vh;border-radius:18px;max-height:90vh}}
+@media (max-width:480px){h1{font-size:17px;flex-basis:100%}.top .seg{flex:1}.top .seg button{flex:1}.seg button{padding:6px 9px}.btn{padding:8px 11px}}
+.sheet h2{margin:0;font-size:20px}
+.close{float:right;border:0;background:var(--surface-2);border-radius:999px;width:34px;height:34px;font-size:18px;color:var(--ink-2)}
+.verdict{border-radius:12px;padding:12px 14px;margin:12px 0}
+.verdict.BUY{background:var(--good-bg)} .verdict.WAIT{background:var(--warn-bg)} .verdict.AVOID{background:var(--bad-bg)} .verdict.NO_TRADE{background:var(--none-bg)}
+.verdict .v{font-size:20px;font-weight:800}
+h3{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);margin:18px 0 6px}
+.check{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.check:last-child{border-bottom:0}
+.check .ic{font-size:16px;width:20px;text-align:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv{background:var(--surface-2);border-radius:10px;padding:9px 11px}
+.kv .k{font-size:12px;color:var(--ink-3)} .kv .v{font-weight:700;font-variant-numeric:tabular-nums}
+.money{border-radius:10px;padding:10px 12px;background:var(--surface-2);margin-top:8px}
+.bar{display:flex;height:22px;border-radius:6px;overflow:hidden;gap:2px;background:var(--surface)}
+.bar div{height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:13px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.warnbox{background:var(--warn-bg);border-radius:10px;padding:8px 11px;margin:6px 0;font-size:13.5px}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.foot{font-size:12px;color:var(--ink-3);margin-top:14px}
+/* positions */
+.range{position:relative;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--bad) 0,var(--none) 50%,var(--good) 100%);opacity:.75;margin:10px 0 4px}
+.range i{position:absolute;top:-4px;width:4px;height:16px;border-radius:2px;background:var(--ink);transform:translateX(-2px)}
+.rangelbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.tile{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px}
+.tile .k{font-size:12.5px;color:var(--ink-2)} .tile .v{font-size:22px;font-weight:750;font-variant-numeric:tabular-nums;margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+td,th{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)} th{color:var(--ink-3);font-weight:600;font-size:12px}
+td.r,th.r{text-align:right}
+.chartbox{position:relative}
+.tt{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);border-radius:8px;padding:5px 8px;font-size:12px;white-space:nowrap;display:none;transform:translate(-50%,-110%)}
+.field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
+.field input{border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:9px;padding:8px 10px;font:inherit}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.tip{position:fixed;z-index:60;max-width:300px;background:var(--ink);color:var(--surface);border-radius:10px;padding:10px 12px;font-size:13.5px;display:none;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.tip b{display:block;margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;z-index:70;display:none;font-size:14px;max-width:90vw}
+.empty{text-align:center;color:var(--ink-2);padding:26px 10px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.switch{display:flex;align-items:center;gap:8px}
+body.locked .mood,body.locked nav.tabs,body.locked #refresh,body.locked #mkt{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top">
+      <h1>📈 Stock Scanner</h1>
+      <div class="seg" id="mkt"></div>
+      <button class="btn primary" id="refresh">↻ Refresh</button>
+    </div>
+    <div class="updated" id="updated">Loading…</div>
+  </header>
+  <div id="banners"></div>
+  <div class="card mood" id="mood"></div>
+  <nav class="tabs">
+    <button data-tab="picks" class="on">Today's picks</button>
+    <button data-tab="plan">My plan</button>
+    <button data-tab="results">My results</button>
+  </nav>
+  <section id="tab-picks"></section>
+  <section id="tab-plan" hidden></section>
+  <section id="tab-results" hidden></section>
+</div>
+<div class="overlay" id="overlay"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+"use strict";
+// ============================================================ storage
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){ toast("Couldn't save on this phone (storage blocked)."); } },
+};
+function guessRepo(){
+  const h = location.hostname;
+  if (h.endsWith(".github.io")){
+    const owner = h.split(".")[0], seg = location.pathname.split("/").filter(Boolean)[0];
+    return owner + "/" + (seg || h);
+  }
+  return "";
+}
+let CFG = null, RES = {}, STATUS = null;
+let market = LS.get("ss_market", "PSX");
+let GH = LS.get("ss_github", {repo: "", token: "", branch: "main"});
+let filter = "all", showNone = false, openSym = null, resetArmed = false, busy = false, runInfo = null;
+
+// ============================================================ helpers
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const term = (k, text) => `<span class="term" data-term="${k}">${text}</span>`;
+const today = () => new Date().toLocaleDateString("en-CA");
+function M(){ return CFG ? CFG.markets[market] : null; }
+function cur(){ return M() ? M().currency : ""; }
+function settings(){
+  const m = M(), s = LS.get("ss_settings_" + market, {});
+  return {budget: +(s.budget || m.budget), max_loss: +(s.max_loss || m.max_loss_per_trade)};
+}
+function mcfg(){ const st = settings(); return Object.assign({}, M(), {budget: st.budget, max_loss_per_trade: st.max_loss}); }
+function money(x, signed){
+  if (x == null || isNaN(x)) return "–";
+  const a = Math.abs(x), dp = a >= 1000 ? 0 : 2;
+  const s = a.toLocaleString(undefined, {minimumFractionDigits: dp, maximumFractionDigits: dp});
+  return (signed ? (x > 0 ? "+" : x < 0 ? "−" : "") : (x < 0 ? "−" : "")) + cur() + " " + s;
+}
+function num(x, dp=2){ return x == null ? "–" : Number(x).toLocaleString(undefined,{minimumFractionDigits:dp,maximumFractionDigits:dp}); }
+function pct(x){ return x == null ? "–" : (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(x).toFixed(2) + "%"; }
+function cls(x){ return x > 0 ? "up" : x < 0 ? "down" : ""; }
+function sigChip(sig){ const s = SIG[sig]; return `<span class="sig ${sig}">${s.e} ${s.t}</span>`; }
+function toast(msg, ms){ const t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(()=> t.style.display="none", ms || 3800); }
+const b64enc = s => btoa(unescape(encodeURIComponent(s)));
+const b64dec = s => decodeURIComponent(escape(atob(s.replace(/\n/g, ""))));
+
+// ============================================================ money maths (same as the Python scanner)
+function feeRate(f){ const comm = (f.commission_pct||0)/100; return comm + comm*(f.tax_on_commission_pct||0)/100 + (f.other_pct||0)/100; }
+function sizePosition(entry, stop, m, cash){
+  const fr = feeRate(m.fees), lot = Math.max(1, m.lot_size || 1);
+  const lossPer = (entry - stop) + fr * (entry + stop);
+  if (lossPer <= 0) return 0;
+  const byRisk = m.max_loss_per_trade / lossPer;
+  const byCash = Math.min(cash, m.budget * m.max_position_pct / 100) / (entry * (1 + fr));
+  return Math.max(0, Math.floor(Math.min(byRisk, byCash) / lot) * lot);
+}
+function tradeMoney(sh, entry, exit, m){
+  const fr = feeRate(m.fees), bf = sh*entry*fr, sf = sh*exit*fr, pre = sh*(exit-entry) - bf - sf;
+  const tax = Math.max(0, pre) * (m.fees.cgt_pct || 0) / 100;
+  return {fees: bf + sf, buy_fees: bf, sell_fees: sf, tax, net: pre - tax};
+}
+function planFor(p){
+  const m = mcfg(), L = p.levels, cash = practice().cash;
+  const shares = sizePosition(L.entry, L.stop, m, cash);
+  if (shares <= 0) return null;
+  const win = tradeMoney(shares, L.entry, L.target, m), lose = tradeMoney(shares, L.entry, L.stop, m);
+  return {shares, entry: L.entry, stop: L.stop, target: L.target, cost: shares*L.entry,
+          risk_money: -lose.net, reward_money: win.net, fees_round_trip: win.fees, tax_if_win: win.tax,
+          hold_days: CFG.rules.max_hold_days};
+}
+
+// ============================================================ practice account (saved on this phone)
+function practice(){
+  const a = LS.get("ss_practice_" + market, null);
+  if (a) return a;
+  const b = settings().budget;
+  return {start_cash: b, cash: b, positions: [], closed: [], equity: []};
+}
+function savePractice(a){ LS.set("ss_practice_" + market, a); }
+function priceMap(){ const r = RES[market]; const o = {}; (r ? r.picks : []).forEach(p => o[p.symbol] = p.price); return o; }
+function recordEquity(a){
+  const pr = priceMap();
+  a.positions.forEach(p => { if (pr[p.symbol] != null) p.last = pr[p.symbol]; });
+  const eq = a.cash + a.positions.reduce((s, p) => s + p.shares * (p.last ?? p.entry), 0);
+  const d = today();
+  a.equity = a.equity.filter(e => e.d !== d).concat([{d, v: Math.round(eq*100)/100}]).slice(-400);
+}
+function positionSignal(pos, price){
+  const held = Math.round((new Date(today()) - new Date(pos.date)) / 864e5), maxd = CFG.rules.max_hold_days;
+  if (price <= pos.stop) return ["SELL", `Price is at or below your stop (${num(pos.stop)}). Sell to keep the loss small.`, held];
+  if (price >= pos.target) return ["SELL", `Target reached (${num(pos.target)}). Take the profit.`, held];
+  if (held >= Math.floor(maxd * 7 / 5)) return ["SELL", `Held for ${held} days, past your ${maxd}-trading-day limit.`, held];
+  return ["HOLD", `Between your stop (${num(pos.stop)}) and target (${num(pos.target)}). Keep holding.`, held];
+}
+function buy(sym){
+  const a = practice(), p = (RES[market]?.picks || []).find(x => x.symbol === sym);
+  if (!p) return toast("Refresh first: no data for " + sym);
+  if (a.positions.some(x => x.symbol === sym)) return toast("You already hold " + sym + " in practice.");
+  const pl = planFor(p); if (!pl) return toast("No position size fits your budget and max loss for " + sym + ".");
+  const fees = pl.cost * feeRate(M().fees);
+  a.cash = Math.round((a.cash - pl.cost - fees) * 100) / 100;
+  a.positions.push({symbol: sym, shares: pl.shares, entry: pl.entry, stop: pl.stop, target: pl.target, date: today(),
+                    buy_fees: fees, signal_at_entry: p.signal, reason: p.reason, last: pl.entry});
+  recordEquity(a); savePractice(a); render(); toast("Practice buy recorded: " + pl.shares + " " + sym);
+}
+function sell(sym, why){
+  const a = practice(), pos = a.positions.find(x => x.symbol === sym);
+  if (!pos) return toast("You don't hold " + sym + ".");
+  const price = priceMap()[sym] ?? pos.last ?? pos.entry, m = mcfg(), t = tradeMoney(pos.shares, pos.entry, price, m);
+  a.cash = Math.round((a.cash + pos.shares*price - t.sell_fees - t.tax) * 100) / 100;
+  a.positions = a.positions.filter(x => x !== pos);
+  a.closed.push({symbol: sym, shares: pos.shares, entry: pos.entry, exit: price, opened: pos.date, closed: today(),
+                 fees: t.fees, tax: t.tax, net: Math.round(t.net*100)/100, pct: Math.round(10000*t.net/(pos.shares*pos.entry))/100,
+                 result: t.net > 0 ? "win" : "loss", entry_reason: pos.reason || "", exit_reason: why || "Sold from the dashboard"});
+  recordEquity(a); savePractice(a); render(); toast("Practice sell recorded: " + sym);
+}
+function practiceView(){
+  const a = practice(), pr = priceMap(), m = mcfg();
+  let value = 0;
+  const positions = a.positions.map(p => {
+    const price = pr[p.symbol] ?? p.last ?? p.entry, t = tradeMoney(p.shares, p.entry, price, m);
+    const [sig, why, days] = positionSignal(p, price); value += p.shares * price;
+    return Object.assign({}, p, {price, pnl: t.net, pnl_pct: 100*t.net/(p.shares*p.entry), signal: sig, why, days});
+  });
+  const c = a.closed, wins = c.filter(t => t.net > 0).map(t => t.net), losses = c.filter(t => t.net <= 0).map(t => t.net);
+  const avg = xs => xs.length ? xs.reduce((s,x)=>s+x,0)/xs.length : null;
+  return {start_cash: a.start_cash, cash: a.cash, equity_now: a.cash + value, total_pnl: a.cash + value - a.start_cash,
+          positions, closed: c.slice().reverse().slice(0, 100), equity: a.equity,
+          stats: {trades: c.length, wins: wins.length, losses: losses.length,
+                  win_rate: c.length ? Math.round(1000*wins.length/c.length)/10 : null,
+                  avg_win: avg(wins), avg_loss: avg(losses)}};
+}
+
+// ============================================================ GitHub
+function ghHeaders(raw){ return {Authorization: "Bearer " + GH.token, Accept: raw ? "application/vnd.github.raw+json" : "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}; }
+async function gh(path, opt){
+  const r = await fetch("https://api.github.com/repos/" + GH.repo + path, Object.assign({cache: "no-store"}, opt || {}));
+  if (r.status === 401) throw new Error("GitHub key is wrong or expired. Update it in My results → Settings.");
+  if (r.status === 403 || r.status === 404) throw new Error("GitHub key can't reach " + GH.repo + " (check the repository name and the key's permissions).");
+  if (!r.ok && r.status !== 204) throw new Error("GitHub error " + r.status);
+  return r;
+}
+async function getJSON(repoPath){
+  const r = await fetch("https://api.github.com/repos/" + GH.repo + "/contents/" + repoPath + "?ref=" + encodeURIComponent(GH.branch || "main"),
+                        {cache: "no-store", headers: ghHeaders(true)});
+  if (r.status === 404) return null;
+  if (r.status === 401) throw new Error("Your GitHub key is wrong or expired. Connect again below.");
+  if (!r.ok) throw new Error("GitHub error " + r.status);
+  return await r.json();
+}
+async function connect(repo, token){
+  const r = await fetch("https://api.github.com/repos/" + repo, {headers: {Authorization: "Bearer " + token, Accept: "application/vnd.github+json"}});
+  if (r.status === 401) throw new Error("That key isn't valid. Copy it again from GitHub.");
+  if (!r.ok) throw new Error("Can't see " + repo + " with that key. Check the name and that the key includes this repository.");
+  const j = await r.json();
+  GH = {repo, token, branch: j.default_branch || "main"}; LS.set("ss_github", GH);
+}
+async function editConfig(fn, message){
+  const r = await gh("/contents/config.json?ref=" + encodeURIComponent(GH.branch), {headers: ghHeaders(false)});
+  const j = await r.json(), cfg = JSON.parse(b64dec(j.content));
+  fn(cfg);
+  await gh("/contents/config.json", {method: "PUT", headers: Object.assign(ghHeaders(false), {"Content-Type": "application/json"}),
+    body: JSON.stringify({message, content: b64enc(JSON.stringify(cfg, null, 2) + "\n"), sha: j.sha, branch: GH.branch})});
+  CFG.markets = cfg.markets; CFG.rules = cfg.rules;
+}
+
+// ============================================================ loading + refresh
+async function loadAll(){
+  if (!GH.token || !GH.repo){ welcome(); return; }
+  const [cfg, psx, us, st] = await Promise.all([
+    getJSON("config.json"), getJSON("docs/data/results_PSX.json"),
+    getJSON("docs/data/results_US.json"), getJSON("docs/data/status.json"),
+  ]);
+  if (!cfg) throw new Error("config.json not found in " + GH.repo + ".");
+  document.body.classList.remove("locked");
+  CFG = cfg; RES = {PSX: psx, US: us}; STATUS = st;
+  if (!CFG.markets[market]) market = "PSX";
+  const a = practice(); if (RES[market]){ recordEquity(a); savePractice(a); }
+  render();
+}
+async function refresh(){
+  if (busy) return;
+  const b = $("refresh");
+  if (!GH.token){ welcome(); return; }
+  busy = true; b.disabled = true;
+  const t0 = Date.now(), held = practice().positions.map(p => p.symbol);
+  const label = s => { const sec = Math.round((Date.now() - t0) / 1000); b.innerHTML = `<span class="spin"></span>${s} ${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`; };
+  try {
+    label("Starting");
+    await gh("/actions/workflows/scan.yml/dispatches", {method: "POST", headers: Object.assign(ghHeaders(false), {"Content-Type": "application/json"}),
+      body: JSON.stringify({ref: GH.branch, inputs: {market, extra: held.join(",")}})});
+    let run = null;
+    while (Date.now() - t0 < 8 * 60 * 1000){
+      await new Promise(r => setTimeout(r, 5000));
+      const r = await gh("/actions/workflows/scan.yml/runs?event=workflow_dispatch&per_page=5", {headers: ghHeaders(false)});
+      const runs = (await r.json()).workflow_runs || [];
+      run = runs.find(x => new Date(x.created_at).getTime() >= t0 - 90000) || run;
+      if (!run){ label("Starting"); continue; }
+      if (run.status !== "completed"){ label(run.status === "queued" ? "Queued" : "Scanning"); continue; }
+      break;
+    }
+    if (!run || run.status !== "completed") throw new Error("The scan is taking longer than usual. Tap Refresh again in a minute.");
+    if (run.conclusion !== "success"){ runInfo = run.html_url; throw new Error("The scan failed on GitHub. Open My results → Settings → Last scan log."); }
+    runInfo = run.html_url;
+    await loadAll(); toast("Scan finished");
+  } catch(e){ toast(e.message, 6000); render(); }
+  busy = false; b.disabled = false; b.innerHTML = "↻ Refresh";
+}
+
+// ============================================================ glossary + signals
+const GLOSSARY = {
+  signal: ["Signal", "What your rules say right now. BUY = all 5 checks passed. WAIT = a setup, but some checks failed. AVOID = a setup with serious problems. NO TRADE = nothing happening today. A signal means your rules are met, not that the price will rise."],
+  breakout: ["Breakout", "The price closed higher than its highest close of the last 20 trading days. Buyers pushed it past a level that had held it back."],
+  bounce: ["Oversold bounce", "The stock fell hard (RSI under 30) and today closed higher. Sometimes a sharp drop snaps back."],
+  volume: ["Volume", "How many shares traded today compared with a normal day. A move on high volume (1.5× or more) means many people are behind it."],
+  mood: ["Market mood", "Is the whole market (KSE-100 or S&P 500) above its 20-day average and up today? Most stocks follow the market, so trades go better in a friendly market."],
+  liquid: ["Easy to buy and sell (liquidity)", "How much money trades in this stock on an average day. Thinly traded stocks are hard to sell quickly at a fair price."],
+  odds: ["Odds favour you", "The simulator replays the next days thousands of times. It weighs how often the target comes first by how much more the target pays than the stop costs. If, on average, you come out ahead, this passes."],
+  stop: ["Stop-loss", "The price where you sell to cut a loss. Decide it before you buy and never move it lower. In a fast market the actual sale can happen a bit below it."],
+  target: ["Target", "The price where you sell to take profit. Here it is set at 2× the distance from your buy price to your stop."],
+  shares: ["Number of shares", "Worked out so that, if the stop is hit, you lose about your 'max loss per trade' (including fees), and never more than 40% of your budget goes into one stock."],
+  fees: ["Fees", "Broker commission, tax on that commission and exchange charges, on both the buy and the sell. The rates are in config.json in your GitHub repository."],
+  cgt: ["Capital gains tax", "Tax on profit when you sell. The default for PSX is 15%; check your own rate (filer / non-filer)."],
+  sim: ["Simulator", "Takes this stock's own daily moves from the last year and shuffles them into 10,000 possible futures for the next 10 trading days, then counts how many hit the target first, the stop first, or neither."],
+  history: ["Track record", "Every past day in the price history when the same setup appeared, using the same stop and target rules: what actually happened next."],
+  practice: ["Practice trade", "Pretend money, real prices, saved on this phone. Use it for a few weeks; your results tab shows whether the rules actually work for you before you risk real money."],
+  limit: ["Price limit", "PSX stops a stock moving more than 10% (or Re 1) in a day. Near the limit, it can lock and you may not be able to buy or sell."],
+  hold: ["Hold / Sell", "For stocks you hold: SELL when the stop or target is reached or you have held past your time limit; otherwise HOLD."],
+  winrate: ["Win rate", "The share of your closed practice trades that made money after fees and tax. Compare it with average win vs average loss: a 40% win rate can still be profitable if wins are twice the size of losses."],
+  token: ["GitHub key", "A key that lets this page start a scan and save watchlist changes in your own repository, and nothing else. It is saved only in this phone's browser."],
+};
+const SIG = {
+  BUY: {e:"🟢", t:"BUY", sub:"Good setup"}, WAIT: {e:"🟡", t:"WAIT", sub:"Setup, but not all checks pass"},
+  AVOID: {e:"🔴", t:"AVOID", sub:"Setup with serious problems"}, NO_TRADE: {e:"⚪", t:"NO TRADE", sub:"Nothing happening today"},
+  HOLD: {e:"⚪", t:"HOLD", sub:""}, SELL: {e:"🔴", t:"SELL", sub:""},
+};
+
+// ============================================================ render
+function render(){
+  if (!CFG) return;
+  const r = RES[market], m = M(), wl = m.watchlist;
+  if (r) r.picks.forEach(p => p.watch = wl.includes(p.symbol));
+  $("mkt").innerHTML = Object.keys(CFG.markets).map(k => `<button class="${k===market?"on":""}" data-mkt="${k}">${k === "PSX" ? "🇵🇰 PSX" : "🇺🇸 US"}</button>`).join("");
+  $("updated").textContent = r ? `Last scan: ${new Date(r.updated).toLocaleString()} · prices as of ${r.mood ? r.mood.date : (r.picks[0]||{}).date || "–"} · ${r.picks.length} stocks`
+                               : `No ${market} scan yet.`;
+  let b = "";
+  if (r && r.source === "demo") b += `<div class="banner demo">⚠️ <b>Demo data.</b> These prices are made up for testing.</div>`;
+  if (r && r.stale) b += `<div class="banner err">⚠️ <b>This is the previous scan.</b> The last scan couldn't download new ${esc(market)} prices.${runInfo ? ` <a href="${esc(runInfo)}" target="_blank" rel="noopener">See the log</a>` : ""}</div>`;
+  else if (r && r.errors && r.errors.length) b += `<div class="banner err"><b>Couldn't load ${r.errors.length}:</b> ${esc(r.errors.slice(0,6).join(" · "))}${r.errors.length>6?" …":""}</div>`;
+  $("banners").innerHTML = b;
+  renderMood(); renderPicks(); renderPlan(); renderResults();
+  if (openSym) openPick(openSym);
+}
+function renderMood(){
+  const m = RES[market] && RES[market].mood;
+  if (!m){ $("mood").innerHTML = `<div class="big">⚪</div><div><b>${term("mood","Market mood")}</b><div class="small muted">Waiting for the first ${esc(M().index_name)} scan.</div></div>`; return; }
+  const e = {green:"🟢", yellow:"🟡", red:"🔴"}[m.light];
+  $("mood").innerHTML = `<div class="big">${e}</div><div style="flex:1"><b>${term("mood","Market mood")}: ${m.label}</b>
+     <div class="small muted">${esc(m.name)} is ${m.change_pct >= 0 ? "up" : "down"} ${Math.abs(m.change_pct).toFixed(2)}% today and ${m.above_avg ? "above" : "below"} its 20-day average.</div></div>
+     <div class="price"><div><b>${num(m.level, 0)}</b></div><div class="small ${cls(m.change_pct)}">${pct(m.change_pct)}</div></div>`;
+}
+function spark(vals, w=84, h=26){
+  if (!vals || vals.length < 2) return "";
+  const lo = Math.min(...vals), hi = Math.max(...vals), sp = (hi - lo) || 1;
+  const pts = vals.map((v,i) => `${(i*(w-2)/(vals.length-1)+1).toFixed(1)},${(h-2-(v-lo)/sp*(h-4)).toFixed(1)}`).join(" ");
+  return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--series)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+function pickCard(p){
+  return `<div class="card pick" data-sym="${esc(p.symbol)}">${sigChip(p.signal)}
+    <div><span class="sym">${esc(p.symbol)}</span> ${p.watch ? "★" : ""}</div>
+    <div class="price"><b>${num(p.price)}</b> <span class="small ${cls(p.change_pct)}">${pct(p.change_pct)}</span></div>
+    <div class="reason" style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>${esc(p.reason)}</span>${spark(p.spark)}</div></div>`;
+}
+function renderPicks(){
+  const r = RES[market], el = $("tab-picks"), wl = M().watchlist;
+  const wlHtml = `<div class="card"><div class="small muted" style="margin-bottom:6px"><b>My watchlist</b> (★) · always scanned${GH.token ? "" : " · connect GitHub to edit"}</div>
+     <div class="wl">${wl.map(s => `<span class="chip">${esc(s)}${GH.token ? `<button data-unwatch="${esc(s)}" aria-label="Remove ${esc(s)}">✕</button>` : ""}</span>`).join("")}
+     ${GH.token ? `<input id="addsym" placeholder="+ add symbol" maxlength="12" enterkeyhint="done">` : ""}</div></div>`;
+  if (!r){ el.innerHTML = wlHtml + `<div class="empty">No ${esc(market)} scan yet. It runs automatically after the market closes, or tap <b>↻ Refresh</b> once GitHub is connected.</div>`; return; }
+  const n = r.counts;
+  const fs = [["all",`All (${r.picks.length})`],["BUY",`🟢 Buy (${n.BUY||0})`],["WAIT",`🟡 Wait (${n.WAIT||0})`],["AVOID",`🔴 Avoid (${n.AVOID||0})`],["watch","★ Watchlist"]];
+  let list = r.picks;
+  if (filter === "watch") list = list.filter(p => p.watch); else if (filter !== "all") list = list.filter(p => p.signal === filter);
+  const active = list.filter(p => p.signal !== "NO_TRADE"), none = list.filter(p => p.signal === "NO_TRADE");
+  let html = wlHtml + `<div class="chips">${fs.map(([k,t]) => `<button class="chip ${filter===k?"on":""}" data-filter="${k}">${t}</button>`).join("")}</div>
+    <div class="tiny" style="margin:2px 2px 6px">Tap a stock to see its ${term("signal","signal")}, checklist and plan.</div>`;
+  html += active.length ? active.map(pickCard).join("") : `<div class="empty">No setups ${filter==="all"?"today":"here"}. That's normal: most days most stocks do nothing.</div>`;
+  if (none.length) html += showNone ? none.map(pickCard).join("") + `<button class="btn more" data-none="0">Hide ${none.length} with no setup</button>`
+                                    : `<button class="btn more" data-none="1">Show ${none.length} with no setup today</button>`;
+  el.innerHTML = html;
+}
+function openPick(sym){
+  const p = (RES[market]?.picks || []).find(x => x.symbol === sym);
+  if (!p){ closeSheet(); return; }
+  openSym = sym;
+  const s = SIG[p.signal], held = practiceView().positions.find(x => x.symbol === sym), pl = planFor(p);
+  const icon = {setup:"breakout", volume:"volume", mood:"mood", liquid:"liquid", odds:"odds"};
+  let h = `<button class="close" id="closeSheet" aria-label="Close">✕</button><h2>${esc(p.symbol)} ${p.watch?"★":""}</h2>
+    <div class="muted">${num(p.price)} <span class="${cls(p.change_pct)}">${pct(p.change_pct)}</span> today · ${esc(p.date)}</div>
+    <div class="verdict ${p.signal}"><div class="v">${s.e} ${s.t}</div><div class="small">${p.setups.length ? `${p.passed} of ${p.checks.length} checks passed` : s.sub}</div>
+    <div style="margin-top:6px">${esc(p.reason)}.</div></div>`;
+  h += p.warnings.map(w => `<div class="warnbox">⚠️ ${esc(w)} ${w.includes("price limit") ? term("limit","(?)") : ""}</div>`).join("");
+  if (held) h += `<div class="warnbox">You hold ${held.shares} in practice: ${sigChip(held.signal)} ${esc(held.why)}</div>`;
+  h += `<h3>Checklist</h3>` + p.checks.map(c => `<div class="check"><div class="ic">${c.ok?"✅":"❌"}</div><div><b>${term(icon[c.key], esc(c.label))}</b><div class="small muted">${esc(c.detail)}</div></div></div>`).join("");
+  if (pl){
+    h += `<h3>If you buy (practice)</h3><div class="grid2">
+      <div class="kv"><div class="k">${term("shares","Buy")}</div><div class="v">${pl.shares.toLocaleString()} shares @ ${num(pl.entry)}</div><div class="tiny">${money(pl.cost)}</div></div>
+      <div class="kv"><div class="k">Hold up to</div><div class="v">${pl.hold_days} trading days</div></div>
+      <div class="kv"><div class="k">${term("stop","Stop-loss")} (sell if it falls to)</div><div class="v down">${num(pl.stop)}</div></div>
+      <div class="kv"><div class="k">${term("target","Target")} (sell if it rises to)</div><div class="v up">${num(pl.target)}</div></div></div>
+      <div class="money">Risk <b class="down">${money(pl.risk_money)}</b> to make <b class="up">${money(pl.reward_money)}</b>
+      <div class="tiny">After ${term("fees","fees")} (${money(pl.fees_round_trip)}) and ${term("cgt","tax on profit")} (${money(pl.tax_if_win)}).</div></div>`;
+  } else h += `<div class="warnbox">Your practice cash, budget or max loss is too small for even one lot of ${esc(p.symbol)} with this stop.</div>`;
+  if (p.sim){
+    const t = p.sim.target, st = p.sim.stop, f = p.sim.flat;
+    h += `<h3>${term("sim","Simulator")}</h3><div class="small" style="margin-bottom:6px">In 100 replays of the next ${CFG.rules.max_hold_days} trading days: <b>${Math.round(t)}</b> hit the target, <b>${Math.round(st)}</b> hit the stop, <b>${Math.round(f)}</b> ended in between.</div>
+      <div class="bar" role="img" aria-label="Target first ${t}%, stop first ${st}%, neither ${f}%"><div style="width:${t}%;background:var(--good)"></div><div style="width:${st}%;background:var(--bad)"></div><div style="width:${f}%;background:var(--none)"></div></div>
+      <div class="legend"><span><i class="sw" style="background:var(--good)"></i>Target first ${t}%</span><span><i class="sw" style="background:var(--bad)"></i>Stop first ${st}%</span><span><i class="sw" style="background:var(--none)"></i>Neither ${f}%</span></div>`;
+  }
+  if (p.history){
+    const hs = p.history;
+    h += `<h3>${term("history","Track record")}</h3><div class="small">` + (hs.times
+      ? `This ${p.setups.length ? "setup" : "kind of setup"} appeared <b>${hs.times}</b> times in the price history: <b>${hs.target}</b> hit the target, <b>${hs.stop}</b> hit the stop, <b>${hs.neither}</b> neither.`
+      : `Not enough past examples to judge.`) + `</div>`;
+  }
+  h += `<div class="actions">`;
+  if (held) h += `<button class="btn danger" data-sell="${esc(p.symbol)}">Practice sell ${held.shares} @ ${num(p.price)}</button>`;
+  else if (pl) h += p.signal === "BUY" ? `<button class="btn primary" data-buy="${esc(p.symbol)}">Practice buy ${pl.shares.toLocaleString()} shares</button>`
+                                       : `<button class="btn" data-buy="${esc(p.symbol)}">Practice buy anyway</button>`;
+  if (GH.token) h += p.watch ? `<button class="btn" data-unwatch="${esc(p.symbol)}">Remove from watchlist</button>` : `<button class="btn" data-watch="${esc(p.symbol)}">★ Add to watchlist</button>`;
+  h += `</div><div class="foot">A green BUY means <i>your rules are met</i>, not that the price will rise. Some trades will hit the stop. Practice trades use pretend money. Not financial advice.</div>`;
+  $("sheet").innerHTML = h; $("sheet").classList.add("on"); $("overlay").classList.add("on");
+}
+function closeSheet(){ openSym = null; $("sheet").classList.remove("on"); $("overlay").classList.remove("on"); }
+function renderPlan(){
+  const P = practiceView(), el = $("tab-plan");
+  if (!P.positions.length){ el.innerHTML = `<div class="empty">No open ${term("practice","practice trades")}.<br>Tap a 🟢 BUY pick and press <b>Practice buy</b>.</div>`; return; }
+  el.innerHTML = `<div class="tiny" style="margin:10px 2px">${term("hold","HOLD / SELL")} uses the latest scan's prices.</div>` + P.positions.map(p => {
+    const pos = Math.max(0, Math.min(100, (p.price - p.stop) / (p.target - p.stop) * 100));
+    return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div>${sigChip(p.signal)} <span class="sym">${esc(p.symbol)}</span> <span class="small muted">${p.shares.toLocaleString()} shares · ${p.days} day(s)</span></div>
+        <div class="price"><b class="${cls(p.pnl)}">${money(p.pnl, true)}</b><div class="small ${cls(p.pnl)}">${pct(p.pnl_pct)}</div></div></div>
+      <div class="small muted" style="margin-top:6px">${esc(p.why)}</div><div class="range"><i style="left:${pos}%"></i></div>
+      <div class="rangelbl"><span>Stop ${num(p.stop)}</span><span>Bought ${num(p.entry)} · now ${num(p.price)}</span><span>Target ${num(p.target)}</span></div>
+      <div class="actions"><button class="btn ${p.signal==="SELL"?"danger":""}" data-sell="${esc(p.symbol)}">Practice sell @ ${num(p.price)}</button>
+      <button class="btn" data-open="${esc(p.symbol)}">View signal</button></div></div>`; }).join("");
+}
+function equityChart(pts, start){
+  if (pts.length < 2) return `<div class="tiny">The chart appears after a second day of scans or trades.</div>`;
+  const W = 640, H = 190, L = 8, R = 8, T = 12, B = 22;
+  const vals = pts.map(p => p.v), lo = Math.min(...vals, start), hi = Math.max(...vals, start), pad = (hi - lo) * 0.1 || hi * 0.01;
+  const y = v => T + (H - T - B) * (1 - (v - (lo - pad)) / ((hi + pad) - (lo - pad)));
+  const x = i => L + i * (W - L - R) / (pts.length - 1);
+  const d = pts.map((p,i) => `${i?"L":"M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(""), ys = y(start);
+  return `<div class="chartbox" id="eqbox"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Practice balance over time">
+    <line x1="${L}" x2="${W-R}" y1="${ys}" y2="${ys}" stroke="var(--line)" stroke-dasharray="4 4"/><text x="${W-R}" y="${ys-4}" text-anchor="end" font-size="11" fill="var(--ink-3)">start ${money(start)}</text>
+    <path d="${d}" fill="none" stroke="var(--series)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <text x="${L}" y="${H-6}" font-size="11" fill="var(--ink-3)">${esc(pts[0].d)}</text><text x="${W-R}" y="${H-6}" font-size="11" fill="var(--ink-3)" text-anchor="end">${esc(pts[pts.length-1].d)}</text>
+    <line id="eqx" y1="${T}" y2="${H-B}" stroke="var(--ink-3)" stroke-width="1" visibility="hidden"/><circle id="eqdot" r="5" fill="var(--series)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="transparent" id="eqhit"/></svg><div class="tt" id="eqtt"></div></div>`;
+}
+function wireEquity(pts){
+  const hit = document.getElementById("eqhit"); if (!hit) return;
+  const svg = hit.ownerSVGElement, tt = $("eqtt"), W = 640, L = 8, R = 8;
+  const segs = svg.querySelector("path").getAttribute("d").split(/[ML]/).filter(Boolean).map(s => s.split(",").map(Number));
+  const show = ev => {
+    const rc = svg.getBoundingClientRect(), sx = (ev.clientX - rc.left) / rc.width * W;
+    const i = Math.max(0, Math.min(pts.length-1, Math.round((sx - L) / (W - L - R) * (pts.length - 1)))), [px, py] = segs[i];
+    $("eqx").setAttribute("x1", px); $("eqx").setAttribute("x2", px); $("eqx").setAttribute("visibility","visible");
+    $("eqdot").setAttribute("cx", px); $("eqdot").setAttribute("cy", py); $("eqdot").setAttribute("visibility","visible");
+    tt.style.display = "block"; tt.style.left = (px / W * rc.width) + "px"; tt.style.top = (py / 190 * rc.height) + "px"; tt.textContent = `${pts[i].d}: ${money(pts[i].v)}`;
+  };
+  hit.addEventListener("pointermove", show); hit.addEventListener("pointerdown", show);
+  hit.addEventListener("pointerleave", () => { tt.style.display = "none"; $("eqx").setAttribute("visibility","hidden"); $("eqdot").setAttribute("visibility","hidden"); });
+}
+function renderResults(){
+  const P = practiceView(), st = P.stats, s = settings(), el = $("tab-results");
+  let h = `<div class="tiles" style="margin-top:12px">
+    <div class="tile"><div class="k">Practice balance</div><div class="v">${money(P.equity_now)}</div><div class="small ${cls(P.total_pnl)}">${money(P.total_pnl, true)} since start</div></div>
+    <div class="tile"><div class="k">Cash</div><div class="v">${money(P.cash)}</div><div class="tiny">${P.positions.length} open trade(s)</div></div>
+    <div class="tile"><div class="k">${term("winrate","Win rate")}</div><div class="v">${st.win_rate == null ? "–" : st.win_rate + "%"}</div><div class="tiny">${st.wins} won · ${st.losses} lost</div></div>
+    <div class="tile"><div class="k">Avg win vs avg loss</div><div class="v" style="font-size:16px"><span class="up">${money(st.avg_win)}</span> / <span class="down">${money(st.avg_loss)}</span></div><div class="tiny">Wins should be bigger than losses</div></div></div>`;
+  h += `<div class="card"><b>Practice balance over time</b>${equityChart(P.equity, P.start_cash)}</div>`;
+  h += `<div class="card"><b>Closed trades</b>` + (P.closed.length ? `<div style="overflow:auto"><table><tr><th>Stock</th><th class="r">Bought</th><th class="r">Sold</th><th class="r">Result</th><th>Why sold</th></tr>` +
+     P.closed.map(t => `<tr><td><b>${esc(t.symbol)}</b><div class="tiny">${esc(t.opened)} → ${esc(t.closed)}</div></td><td class="r">${num(t.entry)}</td><td class="r">${num(t.exit)}</td>
+       <td class="r ${cls(t.net)}"><b>${money(t.net, true)}</b><div class="tiny">${pct(t.pct)}</div></td><td class="small muted">${esc(t.exit_reason)}</td></tr>`).join("") + `</table></div>`
+     : `<div class="empty">No closed trades yet. Your journal fills in as you sell practice trades.</div>`) + `</div>`;
+  h += `<div class="card"><b>Settings (${esc(market)}) · saved on this phone</b>
+    <div class="row" style="margin-top:10px">
+      <label class="field"><span class="small muted">Budget (${esc(cur())})</span><input id="setBudget" type="number" inputmode="decimal" min="1" value="${s.budget}"></label>
+      <label class="field"><span class="small muted">Max loss per trade (${esc(cur())})</span><input id="setLoss" type="number" inputmode="decimal" min="1" value="${s.max_loss}"></label>
+      <button class="btn primary" id="saveSettings">Save</button></div>
+    <div class="tiny" style="margin-top:6px">Position sizes update straight away. A new budget becomes your practice cash when you reset the practice account.</div></div>`;
+  h += `<div class="card"><b>${term("token","Connect GitHub")}</b> ${GH.token ? `<span class="small up">✓ connected to ${esc(GH.repo)}</span>` : `<span class="small muted">· not connected</span>`}
+    <div class="small muted" style="margin:6px 0 10px">Your private repository and key. The key is saved only in this phone's browser.</div>
+    <div class="row">
+      <label class="field"><span class="small muted">Repository</span><input id="ghRepo" placeholder="username/stock-scanner" value="${esc(GH.repo)}" autocapitalize="off" autocomplete="off"></label>
+      <label class="field"><span class="small muted">GitHub key</span><input id="ghToken" type="password" placeholder="${GH.token ? "•••••••• (saved)" : "github_pat_…"}" autocomplete="off"></label>
+      <button class="btn primary" id="ghSave">${GH.token ? "Update" : "Connect"}</button>
+      ${GH.token ? `<button class="btn" id="ghForget">Disconnect</button>` : ""}</div>
+    ${runInfo ? `<div class="tiny" style="margin-top:8px"><a href="${esc(runInfo)}" target="_blank" rel="noopener">Last scan log on GitHub</a></div>` : ""}</div>`;
+  h += `<div class="card"><b>Practice data</b><div class="small muted" style="margin:6px 0 10px">Your practice trades live in this phone's browser. Export a backup now and then; clearing browser data deletes them.</div>
+    <div class="row"><button class="btn" id="exportData">⬇ Export backup</button><button class="btn" id="importData">⬆ Import backup</button>
+    <button class="btn" id="resetPractice">${resetArmed ? "Tap again to reset" : "Reset " + esc(market) + " practice account"}</button></div></div>`;
+  el.innerHTML = h; wireEquity(P.equity);
+}
+
+// ============================================================ events
+document.addEventListener("click", async ev => {
+  const t = ev.target.closest("button,[data-sym],.term,[data-tab]");
+  if (!t){ hideTip(); return; }
+  if (t.classList.contains("term")){ ev.stopPropagation(); showTip(t); return; }
+  hideTip();
+  const d = t.dataset;
+  if (d.tab){ document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b === t)); ["picks","plan","results"].forEach(k => $("tab-"+k).hidden = k !== d.tab); return; }
+  if (t.id === "refresh") return refresh();
+  if (t.id === "closeSheet") return closeSheet();
+  if (d.mkt){ if (d.mkt !== market){ closeSheet(); filter = "all"; market = d.mkt; LS.set("ss_market", market); render(); } return; }
+  if (d.filter){ filter = d.filter; renderPicks(); return; }
+  if (d.none){ showNone = d.none === "1"; renderPicks(); return; }
+  if (d.buy) return buy(d.buy);
+  if (d.sell) return sell(d.sell);
+  if (d.open) return openPick(d.open);
+  if (d.watch || d.unwatch) return watch(d.watch || d.unwatch, !!d.watch);
+  if (t.id === "saveSettings"){
+    const budget = +$("setBudget").value, max_loss = +$("setLoss").value;
+    if (!(budget > 0 && max_loss > 0)) return toast("Numbers must be above zero.");
+    LS.set("ss_settings_" + market, {budget, max_loss}); render(); return toast("Saved.");
+  }
+  if (t.id === "ghSave"){
+    const repo = $("ghRepo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\/$/, ""), tok = $("ghToken").value.trim() || GH.token;
+    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return toast("Repository should look like username/stock-scanner");
+    if (!tok) return toast("Paste your GitHub key first.");
+    t.disabled = true;
+    try { await connect(repo, tok); await loadAll(); toast("Connected to " + repo); } catch(e){ toast(e.message, 6000); }
+    t.disabled = false; return;
+  }
+  if (t.id === "ghForget"){ GH = {repo: GH.repo, token: "", branch: GH.branch}; LS.set("ss_github", GH); CFG = null; RES = {}; closeSheet(); welcome(); return toast("Disconnected. The key is removed from this phone."); }
+  if (t.id === "exportData"){
+    const data = {app: "stock-scanner", version: 1, exported: new Date().toISOString(), practice: {}, settings: {}};
+    ["PSX","US"].forEach(k => { data.practice[k] = LS.get("ss_practice_" + k, null); data.settings[k] = LS.get("ss_settings_" + k, null); });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], {type: "application/json"}));
+    a.download = "stock-scanner-practice-" + today() + ".json"; document.body.appendChild(a); a.click(); a.remove(); return;
+  }
+  if (t.id === "importData") return $("importFile").click();
+  if (t.id === "resetPractice"){
+    if (!resetArmed){ resetArmed = true; renderResults(); setTimeout(() => { resetArmed = false; renderResults(); }, 4000); return; }
+    resetArmed = false; try { localStorage.removeItem("ss_practice_" + market); } catch(e){}
+    const a = practice(); recordEquity(a); savePractice(a); render(); return toast("Practice account reset");
+  }
+  if (d.sym) return openPick(d.sym);
+});
+async function watch(sym, add){
+  sym = String(sym).trim().toUpperCase();
+  if (!/^[A-Z0-9.\-^]{1,12}$/.test(sym)) return toast("Type a valid symbol, e.g. OGDC or AAPL.");
+  if (!GH.token) return toast("Connect GitHub in My results → Settings to edit the watchlist.");
+  try {
+    await editConfig(cfg => { const w = cfg.markets[market].watchlist; cfg.markets[market].watchlist = add ? (w.includes(sym) ? w : w.concat([sym])) : w.filter(s => s !== sym); },
+                     (add ? "Add " : "Remove ") + sym + (add ? " to " : " from ") + market + " watchlist");
+    render(); toast(add ? sym + " added. It's included from the next scan." : sym + " removed.");
+  } catch(e){ toast(e.message, 6000); }
+}
+$("importFile").addEventListener("change", async ev => {
+  const f = ev.target.files[0]; ev.target.value = ""; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (data.app !== "stock-scanner" || !data.practice) throw new Error();
+    ["PSX","US"].forEach(k => { if (data.practice[k]) LS.set("ss_practice_" + k, data.practice[k]); if (data.settings && data.settings[k]) LS.set("ss_settings_" + k, data.settings[k]); });
+    render(); toast("Backup imported");
+  } catch(e){ toast("That file isn't a Stock Scanner backup."); }
+});
+document.addEventListener("keydown", ev => {
+  if (ev.key === "Escape"){ closeSheet(); hideTip(); }
+  if (ev.key === "Enter" && ev.target.id === "addsym" && ev.target.value.trim()) watch(ev.target.value, true);
+});
+$("overlay").addEventListener("click", closeSheet);
+function showTip(el){
+  const g = GLOSSARY[el.dataset.term]; if (!g) return;
+  const tip = $("tip"); tip.innerHTML = `<b>${esc(g[0])}</b>${esc(g[1])}`; tip.style.display = "block";
+  const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+  tip.style.left = Math.min(window.innerWidth - tw - 8, Math.max(8, r.left + r.width/2 - tw/2)) + "px";
+  let top = r.bottom + 8; if (top + th > window.innerHeight - 8) top = r.top - th - 8; tip.style.top = top + "px";
+}
+function hideTip(){ $("tip").style.display = "none"; }
+
+function welcome(msg){
+  document.body.classList.add("locked");
+  $("updated").textContent = ""; $("banners").innerHTML = ""; $("mood").innerHTML = "";
+  ["plan","results"].forEach(k => $("tab-"+k).innerHTML = "");
+  $("tab-picks").hidden = false;
+  $("tab-picks").innerHTML = `<div class="card" style="margin-top:14px"><b>🔒 Connect your private scanner</b>
+    <div class="small muted" style="margin:6px 0 12px">Your scans live in your private GitHub repository. Enter its name and your GitHub key once; the key is saved only in this phone's browser.</div>
+    ${msg ? `<div class="banner err">${esc(msg)}</div>` : ""}
+    <div class="row">
+      <label class="field"><span class="small muted">Repository</span><input id="ghRepo" placeholder="username/stock-scanner" value="${esc(GH.repo)}" autocapitalize="off" autocomplete="off"></label>
+      <label class="field"><span class="small muted">GitHub key</span><input id="ghToken" type="password" placeholder="github_pat_…" autocomplete="off"></label>
+      <button class="btn primary" id="ghSave">Connect</button></div></div>`;
+}
+loadAll().catch(e => welcome(e.message));
+</script>
+</body>
+</html>
