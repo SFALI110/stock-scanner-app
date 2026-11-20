@@ -2,149 +2,218 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Stock Scanner</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2a78d6">
+<meta name="theme-color" content="#0d1117">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
 :root{
-  --bg:#f4f4f2; --surface:#fcfcfb; --surface-2:#f0efec; --line:#e2e1dc;
-  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#7a7974;
-  --good:#0ca30c; --warn:#fab219; --bad:#d03b3b; --none:#a3a29c;
-  --good-ink:#0a7a0a; --bad-ink:#b42f2f; --accent:#2a78d6; --series:#2a78d6;
-  --good-bg:#e9f6e9; --warn-bg:#fff5df; --bad-bg:#fbeaea; --none-bg:#f0efec;
-  --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+  --bg:#0d1117; --surface:#151b23; --surface-2:#1e2630; --surface-3:#26303c; --line:#28313c;
+  --ink:#e9eef4; --ink-2:#a9b4c1; --ink-3:#7c8896;
+  --good:#22c55e; --good-ink:#4ade80; --good-bg:rgba(34,197,94,.15);
+  --bad:#ef4444; --bad-ink:#f87171; --bad-bg:rgba(239,68,68,.15);
+  --warn:#f59e0b; --warn-ink:#fbbf24; --warn-bg:rgba(245,158,11,.15);
+  --none:#64748b; --none-bg:rgba(100,116,139,.18);
+  --accent:#3b82f6; --accent-ink:#60a5fa; --accent-bg:rgba(59,130,246,.15); --series:#60a5fa;
+  --radius:16px; --nav-h:64px;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#121211; --surface:#1a1a19; --surface-2:#242422; --line:#33332f;
-    --ink:#f0efec; --ink-2:#c3c2b7; --ink-3:#8f8e86;
-    --good-ink:#4cc94c; --bad-ink:#f07a7a; --accent:#3987e5; --series:#3987e5;
-    --good-bg:#16301a; --warn-bg:#3a2f12; --bad-bg:#3a1a1a; --none-bg:#262624; --none:#6d6c66;
-    --shadow:none;
-  }
+:root[data-theme="light"]{
+  --bg:#f3f4f6; --surface:#ffffff; --surface-2:#f1f3f6; --surface-3:#e6e9ee; --line:#e3e6eb;
+  --ink:#0f172a; --ink-2:#475569; --ink-3:#64748b;
+  --good:#16a34a; --good-ink:#15803d; --good-bg:#dcfce7;
+  --bad:#dc2626; --bad-ink:#b91c1c; --bad-bg:#fee2e2;
+  --warn:#d97706; --warn-ink:#b45309; --warn-bg:#fef3c7;
+  --none:#94a3b8; --none-bg:#eef1f5;
+  --accent:#2563eb; --accent-ink:#1d4ed8; --accent-bg:#dbeafe; --series:#2563eb;
+  color-scheme:light;
 }
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-button{font:inherit;cursor:pointer}
-.wrap{max-width:860px;margin:0 auto;padding:0 14px 90px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior-y:contain}
+button{font:inherit;cursor:pointer;color:inherit}
+input,select{font:inherit;color:var(--ink)}
+.wrap{max-width:640px;margin:0 auto;padding:0 14px calc(var(--nav-h) + 28px)}
 header{position:sticky;top:0;z-index:20;background:var(--bg);padding:12px 0 8px}
-.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-h1{font-size:19px;margin:0;flex:1;letter-spacing:-.01em}
-.seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px}
-.seg button{border:0;background:transparent;padding:7px 14px;border-radius:8px;color:var(--ink-2);font-weight:600}
-.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
-.btn{border:0;border-radius:10px;padding:9px 14px;font-weight:600;background:var(--surface-2);color:var(--ink)}
-.btn.primary{background:var(--accent);color:#fff}
-.btn.danger{background:var(--bad);color:#fff}
-.btn:disabled{opacity:.55;cursor:default}
-.updated{font-size:12.5px;color:var(--ink-3);margin-top:6px}
-.banner{border-radius:10px;padding:9px 12px;margin:6px 0;font-size:13.5px}
-.banner.demo{background:var(--warn-bg)}
-.banner.err{background:var(--bad-bg)}
-.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin:10px 0}
-.mood{display:flex;gap:12px;align-items:center}
-.mood .big{font-size:26px}
-.mood b{font-size:16px}
+.top{display:flex;align-items:center;gap:10px}
+.hello{flex:1;min-width:0}
+.hello .k{font-size:12.5px;color:var(--ink-3)}
+.hello h1{font-size:20px;margin:0;letter-spacing:-.01em}
+.iconbtn{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;position:relative;flex:none}
+.iconbtn svg{width:20px;height:20px}
+.iconbtn .dot{position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--good)}
+.iconbtn:disabled{opacity:.6}
+.sub{display:flex;align-items:center;gap:10px;margin-top:10px}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:12px;padding:3px;flex:none}
+.seg button{border:0;background:transparent;padding:7px 16px;border-radius:9px;color:var(--ink-2);font-weight:600;font-size:14px}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.updated{font-size:12px;color:var(--ink-3);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.ptr{height:0;overflow:hidden;text-align:center;font-size:13px;color:var(--ink-3);transition:height .15s}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin:12px 0}
+.sect{font-size:13px;font-weight:600;color:var(--ink-2);margin:20px 2px 8px;display:flex;justify-content:space-between;align-items:center}
+.sect a,.link{color:var(--accent-ink);font-weight:600;font-size:13px;text-decoration:none;background:none;border:0;padding:0}
 .muted{color:var(--ink-2)} .small{font-size:13px} .tiny{font-size:12px;color:var(--ink-3)}
-nav.tabs{display:flex;gap:4px;margin:12px 0 4px;border-bottom:1px solid var(--line)}
-nav.tabs button{border:0;background:none;padding:10px 12px;color:var(--ink-2);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
-nav.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
-.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:13px;color:var(--ink-2)}
-.chip.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
-.pick{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;cursor:pointer;padding:12px 14px}
-.pick:hover{outline:2px solid var(--line)}
-.sig{display:inline-flex;align-items:center;gap:5px;border-radius:8px;padding:4px 9px;font-weight:700;font-size:12.5px;white-space:nowrap}
-.sig.BUY,.sig.HOLD-good{background:var(--good-bg)} .sig.WAIT{background:var(--warn-bg)}
-.sig.AVOID,.sig.SELL{background:var(--bad-bg)} .sig.NO_TRADE,.sig.HOLD{background:var(--none-bg)}
-.sym{font-weight:700;font-size:16px}
-.price{text-align:right;font-variant-numeric:tabular-nums}
 .up{color:var(--good-ink)} .down{color:var(--bad-ink)}
-.reason{grid-column:1/-1;font-size:13.5px;color:var(--ink-2)}
-.spark{display:block}
-.more{width:100%;margin:6px 0}
+.num{font-variant-numeric:tabular-nums}
+.banner{border-radius:12px;padding:10px 12px;margin:8px 0;font-size:13.5px}
+.banner.demo{background:var(--warn-bg)} .banner.err{background:var(--bad-bg)} .banner.info{background:var(--accent-bg)}
+/* market status */
+.regime{display:flex;align-items:center;gap:12px;border-radius:var(--radius);padding:14px;margin:12px 0}
+.regime.BULL{background:var(--good-bg)} .regime.BEAR{background:var(--bad-bg)} .regime.SIDEWAYS{background:var(--none-bg)} .regime.VOLATILE{background:var(--warn-bg)}
+.regime .k{font-size:12px;color:var(--ink-2)}
+.regime .v{font-size:17px;font-weight:700}
+.regime.BULL .v{color:var(--good-ink)} .regime.BEAR .v{color:var(--bad-ink)} .regime.VOLATILE .v{color:var(--warn-ink)}
+.regime .ic{width:40px;height:40px;border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.regime .adv{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+/* signal label chips */
+.lab{display:inline-flex;align-items:center;gap:4px;border-radius:8px;padding:4px 9px;font-weight:700;font-size:12.5px;white-space:nowrap}
+.lab.STRONG_BUY{background:var(--good);color:#04150a} .lab.BUY{background:var(--good-bg);color:var(--good-ink)}
+.lab.HOLD{background:var(--none-bg);color:var(--ink-2)}
+.lab.SELL{background:var(--bad-bg);color:var(--bad-ink)} .lab.STRONG_SELL{background:var(--bad);color:#fff}
+.lab.open{background:var(--accent-bg);color:var(--accent-ink)} .lab.good{background:var(--good-bg);color:var(--good-ink)} .lab.bad{background:var(--bad-bg);color:var(--bad-ink)}
+/* top signal */
+.top-sig .head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.top-sig .sym{font-size:20px;font-weight:750}
+.mini{display:block;width:100%;height:76px;margin:10px 0 6px}
+.scorebar{position:relative;height:10px;border-radius:5px;background:var(--surface-3);overflow:hidden}
+.scorebar i{position:absolute;top:0;bottom:0}
+.scorebar b{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--ink-3)}
+.scorehead{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-2);margin:8px 0 5px}
+.scorehead .s{font-weight:800;font-size:14px}
+.fchips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.fchip{font-size:12px;padding:3px 8px;border-radius:8px;background:var(--none-bg);color:var(--ink-2)}
+.fchip.ok{background:var(--good-bg);color:var(--good-ink)} .fchip.no{background:var(--bad-bg);color:var(--bad-ink)}
+.kv2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kv{background:var(--surface-2);border-radius:12px;padding:9px 10px;min-width:0}
+.kv .k{font-size:11.5px;color:var(--ink-3)} .kv .v{font-weight:700;font-variant-numeric:tabular-nums;font-size:14.5px}
+.btn{border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-weight:650;background:var(--surface-2);min-height:44px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.good{background:var(--good);border-color:var(--good);color:#04150a}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn:disabled{opacity:.55}
+.btns{display:flex;gap:8px;margin-top:12px}
+.btns .btn{flex:1}
+/* lists */
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--line);cursor:pointer;min-height:58px}
+.row:last-child{border-bottom:0}
+.row:active{background:var(--surface-2)}
+.row .nm{flex:1;min-width:0}
+.row .nm b{font-size:15px}
+.row .nm .tiny{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .px{text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+.row .lab{min-width:82px;justify-content:center}
+.spark{display:block;flex:none}
+.hscroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.hscroll::-webkit-scrollbar{display:none}
+.newcard{flex:none;width:150px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;cursor:pointer}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:12px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:13px;color:var(--ink-2);white-space:nowrap;flex:none}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .wl{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.wl .chip button{border:0;background:none;color:var(--ink-3);padding:0 0 0 4px}
-.wl input{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 11px;width:110px;font:inherit;font-size:13px;text-transform:uppercase}
+.wl .chip button{border:0;background:none;color:var(--ink-3);padding:0 0 0 6px}
+.wl input{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;width:120px;font-size:13px;text-transform:uppercase}
+.empty{text-align:center;color:var(--ink-2);padding:26px 10px}
 .term{border-bottom:1px dotted var(--ink-3);cursor:help}
+/* chart */
+.chartwrap{position:relative;height:330px;margin:0 -4px}
+.chartlegend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);margin:8px 2px}
+.chartlegend i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:3px;margin-right:4px}
+.toggles{display:flex;gap:6px;flex-wrap:wrap}
+/* bottom nav */
+nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex}
+nav.bottom button{flex:1;border:0;background:none;color:var(--ink-3);font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+nav.bottom button svg{width:23px;height:23px}
+nav.bottom button.on{color:var(--accent-ink)}
+nav.bottom .badge{position:absolute;margin:-30px 0 0 22px;min-width:16px;height:16px;border-radius:8px;background:var(--bad);color:#fff;font-size:10px;line-height:16px;padding:0 4px}
 /* sheet */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;display:none}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40;display:none}
 .overlay.on{display:block}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;max-height:92vh;overflow:auto;background:var(--surface);border-radius:18px 18px 0 0;padding:16px 16px 28px;display:none}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;max-height:92vh;overflow:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:8px 16px calc(24px + env(safe-area-inset-bottom));display:none}
 .sheet.on{display:block;animation:up .2s ease}
+.sheet .grab{width:40px;height:5px;border-radius:3px;background:var(--surface-3);margin:4px auto 10px}
 @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
-@media (min-width:700px){.sheet{left:50%;width:640px;margin-left:-320px;bottom:auto;top:5vh;border-radius:18px;max-height:90vh}}
-@media (max-width:480px){h1{font-size:17px;flex-basis:100%}.top .seg{flex:1}.top .seg button{flex:1}.seg button{padding:6px 9px}.btn{padding:8px 11px}}
-.sheet h2{margin:0;font-size:20px}
-.close{float:right;border:0;background:var(--surface-2);border-radius:999px;width:34px;height:34px;font-size:18px;color:var(--ink-2)}
-.verdict{border-radius:12px;padding:12px 14px;margin:12px 0}
-.verdict.BUY{background:var(--good-bg)} .verdict.WAIT{background:var(--warn-bg)} .verdict.AVOID{background:var(--bad-bg)} .verdict.NO_TRADE{background:var(--none-bg)}
+@media (min-width:700px){.sheet{left:50%;width:620px;margin-left:-310px;bottom:auto;top:5vh;border-radius:20px;max-height:90vh}}
+.sheet h2{margin:0;font-size:22px}
+.close{float:right;border:0;background:var(--surface-2);border-radius:999px;width:36px;height:36px;font-size:17px;color:var(--ink-2)}
+.verdict{border-radius:14px;padding:12px 14px;margin:12px 0;background:var(--surface-2)}
+.verdict.buy{background:var(--good-bg)} .verdict.sell{background:var(--bad-bg)}
 .verdict .v{font-size:20px;font-weight:800}
-h3{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);margin:18px 0 6px}
+h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin:20px 0 8px}
+.factor{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.factor:last-child{border-bottom:0}
+.factor .pts{font-weight:750;font-variant-numeric:tabular-nums;text-align:right}
+.factor .fb{grid-column:1/-1;height:5px;border-radius:3px;background:var(--surface-3);position:relative;overflow:hidden;margin-top:3px}
+.factor .fb i{position:absolute;top:0;bottom:0}
 .check{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
 .check:last-child{border-bottom:0}
-.check .ic{font-size:16px;width:20px;text-align:center}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.kv{background:var(--surface-2);border-radius:10px;padding:9px 11px}
-.kv .k{font-size:12px;color:var(--ink-3)} .kv .v{font-weight:700;font-variant-numeric:tabular-nums}
-.money{border-radius:10px;padding:10px 12px;background:var(--surface-2);margin-top:8px}
-.bar{display:flex;height:22px;border-radius:6px;overflow:hidden;gap:2px;background:var(--surface)}
+.check .ic{width:20px;text-align:center}
+.bar{display:flex;height:20px;border-radius:6px;overflow:hidden;gap:2px}
 .bar div{height:100%}
-.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:13px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:12.5px}
 .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.warnbox{background:var(--warn-bg);border-radius:10px;padding:8px 11px;margin:6px 0;font-size:13.5px}
-.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.warnbox{background:var(--warn-bg);border-radius:12px;padding:9px 12px;margin:8px 0;font-size:13.5px}
+details{border-top:1px solid var(--line);margin-top:14px;padding-top:4px}
+summary{cursor:pointer;font-size:13px;font-weight:650;color:var(--ink-2);padding:10px 0}
 .foot{font-size:12px;color:var(--ink-3);margin-top:14px}
-/* positions */
-.range{position:relative;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--bad) 0,var(--none) 50%,var(--good) 100%);opacity:.75;margin:10px 0 4px}
+/* journal + stats */
+.range{position:relative;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--bad) 0,var(--none) 50%,var(--good) 100%);opacity:.8;margin:10px 0 4px}
 .range i{position:absolute;top:-4px;width:4px;height:16px;border-radius:2px;background:var(--ink);transform:translateX(-2px)}
-.rangelbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
-.tile{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px}
-.tile .k{font-size:12.5px;color:var(--ink-2)} .tile .v{font-size:22px;font-weight:750;font-variant-numeric:tabular-nums;margin-top:2px}
-table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
-td,th{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)} th{color:var(--ink-3);font-weight:600;font-size:12px}
+.rangelbl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-3)}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+.tile .k{font-size:12px;color:var(--ink-2)} .tile .v{font-size:21px;font-weight:750;font-variant-numeric:tabular-nums;margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+td,th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)} th{color:var(--ink-3);font-weight:600;font-size:11.5px}
 td.r,th.r{text-align:right}
 .chartbox{position:relative}
-.tt{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);border-radius:8px;padding:5px 8px;font-size:12px;white-space:nowrap;display:none;transform:translate(-50%,-110%)}
+.tt{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);border-radius:8px;padding:5px 8px;font-size:12px;white-space:nowrap;display:none;transform:translate(-50%,-110%)}
 .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
-.field input{border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:9px;padding:8px 10px;font:inherit}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-.tip{position:fixed;z-index:60;max-width:300px;background:var(--ink);color:var(--surface);border-radius:10px;padding:10px 12px;font-size:13.5px;display:none;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.field input,.field select{border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:10px 11px}
+.frow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.switch:last-child{border-bottom:0}
+.tg{appearance:none;width:46px;height:28px;border-radius:14px;background:var(--surface-3);position:relative;flex:none;cursor:pointer;transition:background .15s;margin:0}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s}
+.tg:checked{background:var(--good)} .tg:checked::after{left:21px}
+.tip{position:fixed;z-index:60;max-width:300px;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px;font-size:13.5px;display:none;box-shadow:0 6px 24px rgba(0,0,0,.35)}
 .tip b{display:block;margin-bottom:2px}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;z-index:70;display:none;font-size:14px;max-width:90vw}
-.empty{text-align:center;color:var(--ink-2);padding:26px 10px}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px;margin-right:6px}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 18px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:70;display:none;font-size:14px;max-width:90vw}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--ink-3);border-top-color:var(--accent-ink);border-radius:50%;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-.switch{display:flex;align-items:center;gap:8px}
-body.locked .mood,body.locked nav.tabs,body.locked #refresh,body.locked #mkt{display:none}
+.runlbl{font-size:12px;color:var(--accent-ink);font-weight:600}
+body.locked nav.bottom,body.locked #refresh,body.locked #bell,body.locked .sub{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div class="top">
-      <h1>📈 Stock Scanner</h1>
-      <div class="seg" id="mkt"></div>
-      <button class="btn primary" id="refresh">↻ Refresh</button>
+      <div class="hello"><div class="k" id="greet">Stock Scanner</div><h1 id="title">Scanner</h1></div>
+      <button class="iconbtn" id="bell" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button>
+      <button class="iconbtn" id="refresh" aria-label="Run a new scan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
     </div>
-    <div class="updated" id="updated">Loading…</div>
+    <div class="sub"><div class="seg" id="mkt"></div><div class="updated" id="updated">Loading…</div></div>
   </header>
+  <div class="ptr" id="ptr">Pull to load the latest results</div>
   <div id="banners"></div>
-  <div class="card mood" id="mood"></div>
-  <nav class="tabs">
-    <button data-tab="picks" class="on">Today's picks</button>
-    <button data-tab="plan">My plan</button>
-    <button data-tab="results">My results</button>
-  </nav>
-  <section id="tab-picks"></section>
-  <section id="tab-plan" hidden></section>
-  <section id="tab-results" hidden></section>
+  <section id="view-home"></section>
+  <section id="view-scanner" hidden></section>
+  <section id="view-chart" hidden></section>
+  <section id="view-journal" hidden></section>
+  <section id="view-stats" hidden></section>
 </div>
+<nav class="bottom" id="nav">
+  <button data-view="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>Home</button>
+  <button data-view="scanner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 12 19 5"/></svg>Scanner</button>
+  <button data-view="chart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M12 3v18M18 6v14"/><rect x="4" y="8" width="4" height="7" rx="1"/><rect x="10" y="6" width="4" height="9" rx="1"/><rect x="16" y="10" width="4" height="6" rx="1"/></svg>Chart</button>
+  <button data-view="journal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M5 17a2 2 0 0 1 2-2h12"/><path d="M9 7h6M9 11h4"/></svg>Journal<span class="badge" id="jbadge" hidden></span></button>
+  <button data-view="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg>Stats</button>
+</nav>
 <div class="overlay" id="overlay"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
 <div class="tip" id="tip"></div>
@@ -192,7 +261,6 @@ function money(x, signed){
 function num(x, dp=2){ return x == null ? "–" : Number(x).toLocaleString(undefined,{minimumFractionDigits:dp,maximumFractionDigits:dp}); }
 function pct(x){ return x == null ? "–" : (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(x).toFixed(2) + "%"; }
 function cls(x){ return x > 0 ? "up" : x < 0 ? "down" : ""; }
-function sigChip(sig){ const s = SIG[sig]; return `<span class="sig ${sig}">${s.e} ${s.t}</span>`; }
 function toast(msg, ms){ const t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(()=> t.style.display="none", ms || 3800); }
 const b64enc = s => btoa(unescape(encodeURIComponent(s)));
 const b64dec = s => decodeURIComponent(escape(atob(s.replace(/\n/g, ""))));
@@ -253,7 +321,7 @@ function buy(sym){
   const fees = pl.cost * feeRate(M().fees);
   a.cash = Math.round((a.cash - pl.cost - fees) * 100) / 100;
   a.positions.push({symbol: sym, shares: pl.shares, entry: pl.entry, stop: pl.stop, target: pl.target, date: today(),
-                    buy_fees: fees, signal_at_entry: p.signal, reason: p.reason, last: pl.entry});
+                    buy_fees: fees, signal_at_entry: p.label || p.signal, reason: p.reason, last: pl.entry});
   recordEquity(a); savePractice(a); render(); toast("Practice buy recorded: " + pl.shares + " " + sym);
 }
 function sell(sym, why){
@@ -288,7 +356,7 @@ function practiceView(){
 function ghHeaders(raw){ return {Authorization: "Bearer " + GH.token, Accept: raw ? "application/vnd.github.raw+json" : "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}; }
 async function gh(path, opt){
   const r = await fetch("https://api.github.com/repos/" + GH.repo + path, Object.assign({cache: "no-store"}, opt || {}));
-  if (r.status === 401) throw new Error("GitHub key is wrong or expired. Update it in My results → Settings.");
+  if (r.status === 401) throw new Error("GitHub key is wrong or expired. Update it in Stats → Settings.");
   if (r.status === 403 || r.status === 404) throw new Error("GitHub key can't reach " + GH.repo + " (check the repository name and the key's permissions).");
   if (!r.ok && r.status !== 204) throw new Error("GitHub error " + r.status);
   return r;
@@ -317,31 +385,60 @@ async function editConfig(fn, message){
   CFG.markets = cfg.markets; CFG.rules = cfg.rules;
 }
 
+
+// ============================================================ app state (new screens)
+let view = LS.get("ss_view", "home");
+let scanFilter = "all", scanQuery = "", chartSym = null, chartObj = null, chartLoading = false;
+let CHARTS = {}, SIGLOG = {};
+let chartOpts = LS.get("ss_chart_opts", {ma: true, markers: true, levels: true});
+let PUSH = LS.get("ss_push", {on: false, levels: ["STRONG_BUY", "STRONG_SELL"], markets: ["PSX", "US"], watch_only: false});
+const LABEL = {
+  STRONG_BUY: {t: "Strong buy", e: "▲▲", side: "buy"}, BUY: {t: "Buy", e: "▲", side: "buy"},
+  HOLD: {t: "Hold", e: "●", side: null},
+  SELL: {t: "Sell", e: "▼", side: "sell"}, STRONG_SELL: {t: "Strong sell", e: "▼▼", side: "sell"},
+};
+const REGIME_ICON = {BULL: "📈", BEAR: "📉", SIDEWAYS: "↔️", VOLATILE: "⚡"};
+const labChip = l => `<span class="lab ${l}">${LABEL[l].e} ${LABEL[l].t}</span>`;
+const sideOf = l => (LABEL[l] || {}).side || null;
+function applyTheme(){ document.documentElement.dataset.theme = LS.get("ss_theme", "dark"); }
+applyTheme();
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
 // ============================================================ loading + refresh
 async function loadAll(){
   if (!GH.token || !GH.repo){ welcome(); return; }
-  const [cfg, psx, us, st] = await Promise.all([
-    getJSON("config.json"), getJSON("docs/data/results_PSX.json"),
-    getJSON("docs/data/results_US.json"), getJSON("docs/data/status.json"),
+  const [cfg, psx, us, st, lp, lu] = await Promise.all([
+    getJSON("config.json"), getJSON("docs/data/results_PSX.json"), getJSON("docs/data/results_US.json"),
+    getJSON("docs/data/status.json"), getJSON("docs/data/signals_PSX.json"), getJSON("docs/data/signals_US.json"),
   ]);
   if (!cfg) throw new Error("config.json not found in " + GH.repo + ".");
   document.body.classList.remove("locked");
-  CFG = cfg; RES = {PSX: psx, US: us}; STATUS = st;
+  CFG = cfg; RES = {PSX: psx, US: us}; STATUS = st; SIGLOG = {PSX: lp, US: lu}; CHARTS = {};
   if (!CFG.markets[market]) market = "PSX";
   const a = practice(); if (RES[market]){ recordEquity(a); savePractice(a); }
   render();
+}
+async function loadCharts(mk){
+  if (CHARTS[mk] !== undefined) return CHARTS[mk];
+  const j = await getJSON("docs/data/charts_" + mk + ".json");
+  CHARTS[mk] = j ? j.charts : null;
+  return CHARTS[mk];
+}
+function setRunLabel(s){ $("updated").innerHTML = s ? `<span class="runlbl">${esc(s)}</span>` : updatedText(); }
+async function dispatchScan(inputs){
+  await gh("/actions/workflows/scan.yml/dispatches", {method: "POST", headers: Object.assign(ghHeaders(false), {"Content-Type": "application/json"}),
+    body: JSON.stringify({ref: GH.branch, inputs})});
 }
 async function refresh(){
   if (busy) return;
   const b = $("refresh");
   if (!GH.token){ welcome(); return; }
-  busy = true; b.disabled = true;
+  busy = true; b.disabled = true; b.innerHTML = `<span class="spin"></span>`;
   const t0 = Date.now(), held = practice().positions.map(p => p.symbol);
-  const label = s => { const sec = Math.round((Date.now() - t0) / 1000); b.innerHTML = `<span class="spin"></span>${s} ${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`; };
+  const label = s => { const sec = Math.round((Date.now() - t0) / 1000); setRunLabel(`${s} ${market} · ${Math.floor(sec/60)}:${String(sec%60).padStart(2,"0")}`); };
   try {
     label("Starting");
-    await gh("/actions/workflows/scan.yml/dispatches", {method: "POST", headers: Object.assign(ghHeaders(false), {"Content-Type": "application/json"}),
-      body: JSON.stringify({ref: GH.branch, inputs: {market, extra: held.join(",")}})});
+    await dispatchScan({market, extra: held.join(",")});
     let run = null;
     while (Date.now() - t0 < 8 * 60 * 1000){
       await new Promise(r => setTimeout(r, 5000));
@@ -352,41 +449,90 @@ async function refresh(){
       if (run.status !== "completed"){ label(run.status === "queued" ? "Queued" : "Scanning"); continue; }
       break;
     }
-    if (!run || run.status !== "completed") throw new Error("The scan is taking longer than usual. Tap Refresh again in a minute.");
-    if (run.conclusion !== "success"){ runInfo = run.html_url; throw new Error("The scan failed on GitHub. Open My results → Settings → Last scan log."); }
+    if (!run || run.status !== "completed") throw new Error("The scan is taking longer than usual. Pull down in a minute to load it.");
     runInfo = run.html_url;
+    if (run.conclusion !== "success") throw new Error("The scan failed on GitHub. Stats → Settings → Last scan log.");
     await loadAll(); toast("Scan finished");
   } catch(e){ toast(e.message, 6000); render(); }
-  busy = false; b.disabled = false; b.innerHTML = "↻ Refresh";
+  busy = false; b.disabled = false;
+  b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>`;
+  setRunLabel("");
 }
 
-// ============================================================ glossary + signals
+// ============================================================ glossary
 const GLOSSARY = {
-  signal: ["Signal", "What your rules say right now. BUY = all 5 checks passed. WAIT = a setup, but some checks failed. AVOID = a setup with serious problems. NO TRADE = nothing happening today. A signal means your rules are met, not that the price will rise."],
-  breakout: ["Breakout", "The price closed higher than its highest close of the last 20 trading days. Buyers pushed it past a level that had held it back."],
-  bounce: ["Oversold bounce", "The stock fell hard (RSI under 30) and today closed higher. Sometimes a sharp drop snaps back."],
-  volume: ["Volume", "How many shares traded today compared with a normal day. A move on high volume (1.5× or more) means many people are behind it."],
-  mood: ["Market mood", "Is the whole market above its 20-day average and up today? For US this is the S&P 500. For PSX it is the KSE-100 when available, otherwise the average of the large stocks the scanner tracks. Most stocks follow the market, so trades go better in a friendly market."],
-  liquid: ["Easy to buy and sell (liquidity)", "How much money trades in this stock on an average day. Thinly traded stocks are hard to sell quickly at a fair price."],
-  odds: ["Odds favour you", "The simulator replays the next days thousands of times. It weighs how often the target comes first by how much more the target pays than the stop costs. If, on average, you come out ahead, this passes."],
-  stop: ["Stop-loss", "The price where you sell to cut a loss. Decide it before you buy and never move it lower. In a fast market the actual sale can happen a bit below it."],
-  target: ["Target", "The price where you sell to take profit. Here it is set at 2× the distance from your buy price to your stop."],
-  shares: ["Number of shares", "Worked out so that, if the stop is hit, you lose about your 'max loss per trade' (including fees), and never more than 40% of your budget goes into one stock."],
+  score: ["Signal score", "−100 to +100. Seven factors each add or take away points: trend 25, momentum 20, volume 15, price levels 15, relative strength 10, timeframes 10, market match 5. +70 or more is a Strong buy, −70 or less a Strong sell (stricter when the signal goes against the market)."],
+  regime: ["Market status", "Read from the index (KSE-100, or the average of the large stocks the scanner tracks; S&P 500 for US). Bull = above its 50- and 200-day averages and trending. Bear = below them and trending. Sideways = no clear trend. High volatility = daily moves much bigger than usual."],
+  trend: ["Trend", "Is the price above its 20, 50 and 200-day averages, and are the averages stacked in order? Up to 25 points."],
+  momentum: ["Momentum", "RSI zone (55–70 is healthy, over 80 overbought, under 45 weak) and whether the MACD is above zero and rising. Up to 20 points."],
+  volume: ["Volume", "Today's volume compared with a normal day. A big-volume up day adds points; a big-volume down day takes them away. Up to 15 points."],
+  levels: ["Price levels", "Breaking above the 20-day high (breakout) or below the 20-day low (breakdown); bouncing off support or stalling under resistance. Up to 15 points."],
+  rs: ["Relative strength", "The stock's last 20 days compared with the market's. Stronger than the market earns points. Up to 10 points."],
+  mtf: ["Multi-timeframe", "Do the last week and the 50-day trend point the same way? Up to 10 points."],
+  market: ["Market match", "Bull market +5, bear market −5. Buys in a falling market are the biggest source of losing signals."],
+  rr: ["Risk : reward (net)", "What you'd make at the target compared with what you'd lose at the stop, after fees and tax. On price alone the target is always 2× the risk; fees and capital gains tax bring the net figure down, most on stocks with a tight stop."],
+  stop: ["Stop-loss", "The price where you sell to cut a loss: 1.5× the stock's typical daily move below the buy price. Decide it before you buy and never move it lower."],
+  target: ["Target", "The price where you sell to take profit: 2× the distance from the buy price to the stop."],
+  shares: ["Number of shares", "Sized so that, if the stop is hit, you lose about your 'max loss per trade' (fees included), and never more than 40% of your budget goes into one stock."],
   fees: ["Fees", "Broker commission, tax on that commission and exchange charges, on both the buy and the sell. The rates are in config.json in your GitHub repository."],
   cgt: ["Capital gains tax", "Tax on profit when you sell. The default for PSX is 15%; check your own rate (filer / non-filer)."],
-  sim: ["Simulator", "Takes this stock's own daily moves from the last year and shuffles them into 10,000 possible futures for the next 10 trading days, then counts how many hit the target first, the stop first, or neither."],
-  history: ["Track record", "Every past day in the price history when the same setup appeared, using the same stop and target rules: what actually happened next."],
-  practice: ["Practice trade", "Pretend money, real prices, saved on this phone. Use it for a few weeks; your results tab shows whether the rules actually work for you before you risk real money."],
+  sim: ["Simulator", "Shuffles this stock's own daily moves from the last year into 10,000 possible futures for the next 10 trading days and counts how many hit the target first, the stop first, or neither."],
+  backtest: ["Back-test", "Every past day in the last ~2 years when a stock in your list first got this label, with the same stop and target rules: did the target (or, for sells, the matching fall) come first? 'Avg R' is the average result in units of risk: +0.3 means you'd make 0.3× your risk per signal on average."],
+  siglog: ["Live signal record", "Every Buy, Strong buy, Sell and Strong sell the scanner has given since this feature started, checked on later scans. Right = target reached (or, for sells, the price fell), or it ended ahead after the holding days. This is the honest scorecard: watch it for a few weeks."],
+  setup: ["Setup checklist", "The original 5-check rules: breakout or oversold bounce, volume, market above its 20-day average, liquidity and the simulator's odds. Shown for comparison with the score."],
+  practice: ["Practice trade", "Pretend money, real prices, saved on this phone. Your Journal and Stats show whether the signals work for you before you risk real money."],
   limit: ["Price limit", "PSX stops a stock moving more than 10% (or Re 1) in a day. Near the limit, it can lock and you may not be able to buy or sell."],
-  hold: ["Hold / Sell", "For stocks you hold: SELL when the stop or target is reached or you have held past your time limit; otherwise HOLD."],
-  winrate: ["Win rate", "The share of your closed practice trades that made money after fees and tax. Compare it with average win vs average loss: a 40% win rate can still be profitable if wins are twice the size of losses."],
-  token: ["GitHub key", "A key that lets this page start a scan and save watchlist changes in your own repository, and nothing else. It is saved only in this phone's browser."],
+  hold: ["Hold / Sell", "For practice trades: SELL when the stop or target is reached or you've held past your time limit; otherwise HOLD."],
+  winrate: ["Win rate", "The share of your closed practice trades that made money after fees and tax. A 40% win rate can still be profitable if wins are twice the size of losses."],
+  token: ["GitHub key", "Lets this page start a scan, save watchlist changes and save your notification settings in your own repository, and nothing else. It's saved only in this phone's browser."],
+  push: ["Notifications", "When a scan finds a new signal at the levels you pick, GitHub sends it to this phone. Scans run after each market closes, and when you tap refresh."],
 };
-const SIG = {
-  BUY: {e:"🟢", t:"BUY", sub:"Good setup"}, WAIT: {e:"🟡", t:"WAIT", sub:"Setup, but not all checks pass"},
-  AVOID: {e:"🔴", t:"AVOID", sub:"Setup with serious problems"}, NO_TRADE: {e:"⚪", t:"NO TRADE", sub:"Nothing happening today"},
-  HOLD: {e:"⚪", t:"HOLD", sub:""}, SELL: {e:"🔴", t:"SELL", sub:""},
-};
+
+// ============================================================ small drawing helpers
+function scoreBar(s){
+  const w = Math.abs(s) / 2, col = s >= 0 ? "var(--good)" : "var(--bad)";
+  return `<div class="scorebar" role="img" aria-label="Score ${s}"><i style="${s >= 0 ? "left:50%" : `left:${50 - w}%`};width:${w}%;background:${col}"></i><b></b></div>`;
+}
+function scoreHead(p){
+  const ch = p.score_change;
+  return `<div class="scorehead"><span>${term("score","Signal score")}${ch ? ` <span class="tiny">(${ch > 0 ? "+" : ""}${ch} since last scan)</span>` : ""}</span><span class="s ${p.score > 0 ? "up" : p.score < 0 ? "down" : ""}">${p.score > 0 ? "+" : ""}${p.score}</span></div>`;
+}
+function miniCandles(rows, h){
+  if (!rows || rows.length < 2) return "";
+  h = h || 76;
+  const W = 330, pad = 4, lo = Math.min(...rows.map(r => r[2])), hi = Math.max(...rows.map(r => r[1])), sp = (hi - lo) || 1;
+  const y = v => (pad + (h - 2*pad) * (1 - (v - lo) / sp)).toFixed(1), step = W / rows.length, bw = Math.max(3, step * 0.55);
+  return `<svg class="mini" viewBox="0 0 ${W} ${h}" preserveAspectRatio="none" aria-hidden="true">` + rows.map((r, i) => {
+    const x = step * i + step / 2, up = r[3] >= r[0], c = up ? "var(--good)" : "var(--bad)";
+    const top = y(Math.max(r[0], r[3])), bot = y(Math.min(r[0], r[3]));
+    return `<line x1="${x}" x2="${x}" y1="${y(r[1])}" y2="${y(r[2])}" stroke="${c}" stroke-width="1"/><rect x="${(x - bw/2).toFixed(1)}" y="${top}" width="${bw.toFixed(1)}" height="${Math.max(1, bot - top).toFixed(1)}" fill="${c}" rx="1"/>`;
+  }).join("") + `</svg>`;
+}
+function spark(vals, w=64, h=26){
+  if (!vals || vals.length < 2) return "";
+  const lo = Math.min(...vals), hi = Math.max(...vals), sp = (hi - lo) || 1, up = vals[vals.length-1] >= vals[0];
+  const pts = vals.map((v,i) => `${(i*(w-2)/(vals.length-1)+1).toFixed(1)},${(h-2-(v-lo)/sp*(h-4)).toFixed(1)}`).join(" ");
+  return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${up ? "var(--good)" : "var(--bad)"}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+function fchips(p, max){
+  return `<div class="fchips">` + (p.factors || []).filter(f => f.ok !== null).slice(0, max || 7)
+    .map(f => `<span class="fchip ${f.ok ? "ok" : "no"}">${esc(f.short)} ${f.ok ? "✓" : "✗"}</span>`).join("") + `</div>`;
+}
+function rrText(pl){ return pl && pl.risk_money > 0 ? "1 : " + (pl.reward_money / pl.risk_money).toFixed(1) : "–"; }
+function updatedText(){
+  const r = RES[market];
+  if (!r) return `No ${market} scan yet`;
+  const d = new Date(r.updated), mins = Math.round((Date.now() - d) / 60000);
+  const ago = mins < 60 ? mins + " min ago" : mins < 1440 ? Math.round(mins/60) + " h ago" : d.toLocaleDateString();
+  return `Scanned ${ago} · prices ${esc(r.mood ? r.mood.date : (r.picks[0]||{}).date || "–")}`;
+}
+function pickRow(p){
+  return `<div class="row" data-sym="${esc(p.symbol)}"><div class="nm"><b>${esc(p.symbol)}</b>${p.watch ? " <span class='tiny'>★</span>" : ""}
+      <div class="tiny">${esc(((p.factors || []).find(f => f.key === "levels") || {}).detail || p.reason || "")}</div></div>
+    ${spark(p.spark)}
+    <div class="px"><div>${num(p.price)}</div><div class="small ${cls(p.change_pct)}">${pct(p.change_pct)}</div></div>
+    <span class="lab ${p.label}">${p.score > 0 ? "+" : ""}${p.score}</span></div>`;
+}
 
 // ============================================================ render
 function render(){
@@ -394,191 +540,415 @@ function render(){
   const r = RES[market], m = M(), wl = m.watchlist;
   if (r) r.picks.forEach(p => p.watch = wl.includes(p.symbol));
   $("mkt").innerHTML = Object.keys(CFG.markets).map(k => `<button class="${k===market?"on":""}" data-mkt="${k}">${k === "PSX" ? "🇵🇰 PSX" : "🇺🇸 US"}</button>`).join("");
-  $("updated").textContent = r ? `Last scan: ${new Date(r.updated).toLocaleString()} · prices as of ${r.mood ? r.mood.date : (r.picks[0]||{}).date || "–"} · ${r.picks.length} stocks`
-                               : `No ${market} scan yet.`;
+  if (!busy) $("updated").innerHTML = updatedText();
+  const hr = new Date().getHours();
+  $("greet").textContent = hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
+  $("bell").innerHTML = $("bell").innerHTML.replace(/<span class="dot"><\/span>/, "") + (PUSH.on ? `<span class="dot"></span>` : "");
   let b = "";
   if (r && r.source === "demo") b += `<div class="banner demo">⚠️ <b>Demo data.</b> These prices are made up for testing.</div>`;
   if (r && r.stale) b += `<div class="banner err">⚠️ <b>This is the previous scan.</b> The last scan couldn't download new ${esc(market)} prices.${runInfo ? ` <a href="${esc(runInfo)}" target="_blank" rel="noopener">See the log</a>` : ""}</div>`;
-  else if (r && r.errors && r.errors.length) b += `<div class="banner err"><b>Couldn't load ${r.errors.length}:</b> ${esc(r.errors.slice(0,6).join(" · "))}${r.errors.length>6?" …":""}</div>`;
+  else if (r && r.errors && r.errors.length) b += `<div class="banner err"><b>Couldn't load ${r.errors.length}:</b> ${esc(r.errors.slice(0,4).join(" · "))}${r.errors.length>4?" …":""}</div>`;
+  if (r && r.picks.length && r.picks[0].score === undefined) b += `<div class="banner info">This scan is from before the signal-score update. Tap ↻ to run a new scan.</div>`;
   $("banners").innerHTML = b;
-  renderMood(); renderPicks(); renderPlan(); renderResults();
+  const sells = practiceView().positions.filter(p => p.signal === "SELL").length;
+  $("jbadge").hidden = !sells; $("jbadge").textContent = sells;
+  showView(view, true);
   if (openSym) openPick(openSym);
 }
-function renderMood(){
-  const m = RES[market] && RES[market].mood;
-  if (!m){ $("mood").innerHTML = `<div class="big">⚪</div><div><b>${term("mood","Market mood")}</b><div class="small muted">Waiting for the first ${esc(M().index_name)} scan.</div></div>`; return; }
-  const e = {green:"🟢", yellow:"🟡", red:"🔴"}[m.light];
-  $("mood").innerHTML = `<div class="big">${e}</div><div style="flex:1"><b>${term("mood","Market mood")}: ${m.label}</b>
-     <div class="small muted">${esc(m.name)} is ${m.change_pct >= 0 ? "up" : "down"} ${Math.abs(m.change_pct).toFixed(2)}% today and ${m.above_avg ? "above" : "below"} its 20-day average.</div></div>
-     <div class="price">${m.level != null ? `<div><b>${num(m.level, 0)}</b></div>` : ""}<div class="small ${cls(m.change_pct)}">${pct(m.change_pct)}</div></div>`;
+function showView(v, quiet){
+  view = v; LS.set("ss_view", v);
+  document.querySelectorAll("nav.bottom button").forEach(b => b.classList.toggle("on", b.dataset.view === v));
+  ["home","scanner","chart","journal","stats"].forEach(k => $("view-" + k).hidden = k !== v);
+  $("title").textContent = {home: "Scanner", scanner: "All signals", chart: "Chart", journal: "Journal", stats: "Stats"}[v];
+  ({home: renderHome, scanner: renderScanner, chart: renderChart, journal: renderJournal, stats: renderStats})[v]();
+  if (!quiet) window.scrollTo(0, 0);
 }
-function spark(vals, w=84, h=26){
-  if (!vals || vals.length < 2) return "";
-  const lo = Math.min(...vals), hi = Math.max(...vals), sp = (hi - lo) || 1;
-  const pts = vals.map((v,i) => `${(i*(w-2)/(vals.length-1)+1).toFixed(1)},${(h-2-(v-lo)/sp*(h-4)).toFixed(1)}`).join(" ");
-  return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--series)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+function regimeCard(){
+  const r = RES[market], g = r && r.regime, md = r && r.mood;
+  if (!g) return `<div class="regime SIDEWAYS"><div class="ic">⚪</div><div><div class="k">${term("regime","Market status")}</div><div class="v">Waiting for the next scan</div></div></div>`;
+  const nm = md && md.basket ? (market + " market") : (md ? md.name : "");
+  return `<div class="regime ${g.key}"><div class="ic">${REGIME_ICON[g.key]}</div><div style="flex:1;min-width:0">
+    <div class="k">${term("regime","Market status")}</div>
+    <div class="v">${esc(g.label)}${md ? ` · ${esc(nm)} <span class="${cls(md.change_pct)}">${pct(md.change_pct)}</span>` : ""}</div>
+    <div class="adv">${esc(g.advice)}</div></div></div>`;
 }
-function pickCard(p){
-  return `<div class="card pick" data-sym="${esc(p.symbol)}">${sigChip(p.signal)}
-    <div><span class="sym">${esc(p.symbol)}</span> ${p.watch ? "★" : ""}</div>
-    <div class="price"><b>${num(p.price)}</b> <span class="small ${cls(p.change_pct)}">${pct(p.change_pct)}</span></div>
-    <div class="reason" style="display:flex;justify-content:space-between;gap:10px;align-items:center"><span>${esc(p.reason)}</span>${spark(p.spark)}</div></div>`;
+function topSignalCard(p){
+  const pl = planFor(p), side = sideOf(p.label), held = practice().positions.some(x => x.symbol === p.symbol);
+  return `<div class="card top-sig"><div class="head"><div>
+      <div class="tiny">${side === "sell" ? "Strongest sell signal" : "Top signal"}</div>
+      <div class="sym" data-sym="${esc(p.symbol)}" style="cursor:pointer">${esc(p.symbol)} · ${num(p.price)}</div>
+      <div class="small ${cls(p.change_pct)}">${pct(p.change_pct)} today</div></div>${labChip(p.label)}</div>
+    ${miniCandles(p.mini)}${scoreHead(p)}${scoreBar(p.score)}${fchips(p)}
+    ${pl && side !== "sell" ? `<div class="kv2">
+      <div class="kv"><div class="k">${term("stop","Stop-loss")}</div><div class="v down">${num(pl.stop)}</div></div>
+      <div class="kv"><div class="k">${term("target","Target")}</div><div class="v up">${num(pl.target)}</div></div>
+      <div class="kv"><div class="k">${term("rr","R : R net")}</div><div class="v">${rrText(pl)}</div></div></div>` : ""}
+    <div class="btns">${side === "buy" && pl && !held ? `<button class="btn good" data-buy="${esc(p.symbol)}">Practice buy</button>` : ""}
+      ${held ? `<button class="btn danger" data-sell="${esc(p.symbol)}">Practice sell</button>` : ""}
+      <button class="btn" data-chart="${esc(p.symbol)}">Open chart</button></div></div>`;
 }
-function renderPicks(){
-  const r = RES[market], el = $("tab-picks"), wl = M().watchlist;
-  const wlHtml = `<div class="card"><div class="small muted" style="margin-bottom:6px"><b>My watchlist</b> (★) · always scanned${GH.token ? "" : " · connect GitHub to edit"}</div>
+function renderHome(){
+  const r = RES[market], el = $("view-home");
+  let h = regimeCard();
+  if (!r){ el.innerHTML = h + `<div class="empty">No ${esc(market)} scan yet. It runs automatically after the market closes, or tap ↻.</div>`; return; }
+  const P = practiceView(), alerts = P.positions.filter(p => p.signal === "SELL");
+  const heldBad = P.positions.filter(p => { const q = r.picks.find(x => x.symbol === p.symbol); return q && sideOf(q.label) === "sell"; });
+  if (alerts.length) h += `<div class="banner err" data-view="journal" style="cursor:pointer">🔴 <b>${alerts.length} practice trade${alerts.length > 1 ? "s" : ""} to sell:</b> ${alerts.map(p => esc(p.symbol)).join(", ")}. Open Journal →</div>`;
+  else if (heldBad.length) h += `<div class="banner demo">⚠️ You hold ${heldBad.map(p => esc(p.symbol)).join(", ")}, now rated Sell. Check the chart.</div>`;
+  const scored = r.picks.filter(p => p.score !== undefined);
+  const buys = scored.filter(p => sideOf(p.label) === "buy").sort((a, b) => b.score - a.score);
+  const sells = scored.filter(p => sideOf(p.label) === "sell").sort((a, b) => a.score - b.score);
+  const top = buys[0] || sells[0];
+  h += top ? topSignalCard(top) : `<div class="card"><b>No buy or sell signals today.</b><div class="small muted" style="margin-top:4px">Every stock scored between the Buy and Sell lines. Quiet days are normal.</div></div>`;
+  const others = buys.slice(1).concat(sells.filter(p => p !== top)).slice(0, 12);
+  if (others.length) h += `<div class="sect"><span>More signals today</span><button class="link" data-view="scanner">See all</button></div><div class="hscroll">` +
+    others.map(p => `<div class="newcard" data-sym="${esc(p.symbol)}"><div style="display:flex;justify-content:space-between;align-items:center"><b>${esc(p.symbol)}</b><span class="small ${cls(p.change_pct)}">${pct(p.change_pct)}</span></div>
+      ${miniCandles((p.mini || []).slice(-14), 40)}<span class="lab ${p.label}">${LABEL[p.label].e} ${p.score > 0 ? "+" : ""}${p.score}</span></div>`).join("") + `</div>`;
+  const wl = scored.filter(p => p.watch);
+  h += `<div class="sect"><span>Watchlist</span><button class="link" data-filter-go="watch">Edit</button></div>`;
+  h += wl.length ? `<div class="list">${wl.map(pickRow).join("")}</div>` : `<div class="empty">Add stocks to your watchlist in the Scanner tab.</div>`;
+  if (P.positions.length) h += `<div class="sect"><span>Practice trades</span><button class="link" data-view="journal">Open journal</button></div>
+    <div class="card" data-view="journal" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center"><div><b>${P.positions.length} open</b><div class="tiny">${alerts.length ? alerts.length + " to sell" : "all on HOLD"}</div></div>
+    <div class="num" style="text-align:right"><b class="${cls(P.total_pnl)}">${money(P.total_pnl, true)}</b><div class="tiny">since start</div></div></div>`;
+  h += `<div class="foot">Signals mean the rules are met, not that the price will move. Practice first. Not financial advice.</div>`;
+  el.innerHTML = h;
+}
+function renderScanner(){
+  const r = RES[market], el = $("view-scanner"), wl = M().watchlist;
+  let h = `<div class="card"><div class="small muted" style="margin-bottom:8px"><b>My watchlist</b> · always scanned${GH.token ? "" : " · connect GitHub to edit"}</div>
      <div class="wl">${wl.map(s => `<span class="chip">${esc(s)}${GH.token ? `<button data-unwatch="${esc(s)}" aria-label="Remove ${esc(s)}">✕</button>` : ""}</span>`).join("")}
      ${GH.token ? `<input id="addsym" placeholder="+ add symbol" maxlength="12" enterkeyhint="done">` : ""}</div></div>`;
-  if (!r){ el.innerHTML = wlHtml + `<div class="empty">No ${esc(market)} scan yet. It runs automatically after the market closes, or tap <b>↻ Refresh</b> once GitHub is connected.</div>`; return; }
-  const n = r.counts;
-  const fs = [["all",`All (${r.picks.length})`],["BUY",`🟢 Buy (${n.BUY||0})`],["WAIT",`🟡 Wait (${n.WAIT||0})`],["AVOID",`🔴 Avoid (${n.AVOID||0})`],["watch","★ Watchlist"]];
-  let list = r.picks;
-  if (filter === "watch") list = list.filter(p => p.watch); else if (filter !== "all") list = list.filter(p => p.signal === filter);
-  const active = list.filter(p => p.signal !== "NO_TRADE"), none = list.filter(p => p.signal === "NO_TRADE");
-  let html = wlHtml + `<div class="chips">${fs.map(([k,t]) => `<button class="chip ${filter===k?"on":""}" data-filter="${k}">${t}</button>`).join("")}</div>
-    <div class="tiny" style="margin:2px 2px 6px">Tap a stock to see its ${term("signal","signal")}, checklist and plan.</div>`;
-  html += active.length ? active.map(pickCard).join("") : `<div class="empty">No setups ${filter==="all"?"today":"here"}. That's normal: most days most stocks do nothing.</div>`;
-  if (none.length) html += showNone ? none.map(pickCard).join("") + `<button class="btn more" data-none="0">Hide ${none.length} with no setup</button>`
-                                    : `<button class="btn more" data-none="1">Show ${none.length} with no setup today</button>`;
-  el.innerHTML = html;
+  if (!r){ el.innerHTML = h + `<div class="empty">No ${esc(market)} scan yet.</div>`; return; }
+  const n = r.label_counts || {};
+  const fs = [["all", `All ${r.picks.length}`], ["STRONG_BUY", `▲▲ Strong buy ${n.STRONG_BUY||0}`], ["BUY", `▲ Buy ${n.BUY||0}`], ["HOLD", `● Hold ${n.HOLD||0}`],
+              ["SELL", `▼ Sell ${n.SELL||0}`], ["STRONG_SELL", `▼▼ Strong sell ${n.STRONG_SELL||0}`], ["watch", "★ Watchlist"]];
+  let list = r.picks.slice().sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  if (scanFilter === "watch") list = list.filter(p => p.watch); else if (scanFilter !== "all") list = list.filter(p => p.label === scanFilter);
+  if (scanQuery) list = list.filter(p => p.symbol.includes(scanQuery.toUpperCase()));
+  h += `<div class="chips">${fs.map(([k,t]) => `<button class="chip ${scanFilter===k?"on":""}" data-filter="${k}">${t}</button>`).join("")}</div>
+    <div class="frow" style="margin-bottom:10px"><label class="field"><input id="scanq" placeholder="Search symbol" value="${esc(scanQuery)}" autocapitalize="characters" autocomplete="off"></label></div>`;
+  h += list.length ? `<div class="list">${list.map(pickRow).join("")}</div>` : `<div class="empty">Nothing here right now.</div>`;
+  h += `<div class="tiny" style="margin:10px 2px">Sorted by ${term("score","score")}, strongest buy first. Tap a stock for the full breakdown.</div>`;
+  el.innerHTML = h;
 }
+
+// ============================================================ chart view
+function loadLWC(){
+  if (window.LightweightCharts) return Promise.resolve();
+  return new Promise((res, rej) => { const s = document.createElement("script"); s.src = "lightweight-charts.js";
+    s.onload = res; s.onerror = () => rej(new Error("Couldn't load the chart. Check your internet.")); document.head.appendChild(s); });
+}
+function scoreLine(scores, dates){
+  const pts = scores.map((s, i) => [i, s]).filter(x => x[1] != null);
+  if (pts.length < 2) return "";
+  const W = 340, H = 90, y = v => (H/2 - v / 100 * (H/2 - 6)).toFixed(1), x = i => (i * (W - 4) / (scores.length - 1) + 2).toFixed(1);
+  const band = (v, c) => `<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="3 4" stroke-width="1"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" role="img" aria-label="Signal score over time">
+    ${band(70,"var(--good)")}${band(40,"var(--good)")}${band(0,"var(--line)")}${band(-40,"var(--bad)")}${band(-70,"var(--bad)")}
+    <polyline points="${pts.map(p => x(p[0]) + "," + y(p[1])).join(" ")}" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <div class="rangelbl"><span>${esc(dates[0])}</span><span>dashed lines: ±40 Buy/Sell · ±70 Strong</span><span>${esc(dates[dates.length-1])}</span></div>`;
+}
+async function renderChart(){
+  const r = RES[market], el = $("view-chart");
+  if (chartObj){ try { chartObj.remove(); } catch(e){} chartObj = null; }
+  if (!r){ el.innerHTML = `<div class="empty">No ${esc(market)} scan yet.</div>`; return; }
+  const picks = r.picks.slice().sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  if (!chartSym || !picks.find(p => p.symbol === chartSym)) chartSym = (picks.find(p => p.watch) || picks[0] || {}).symbol;
+  const p = picks.find(x => x.symbol === chartSym);
+  if (!p){ el.innerHTML = `<div class="empty">No stocks in this scan.</div>`; return; }
+  const quick = picks.filter(x => x.watch || sideOf(x.label)).slice(0, 14);
+  if (!quick.includes(p)) quick.unshift(p);
+  const pl = planFor(p);
+  el.innerHTML = `<div class="chips">${quick.map(x => `<button class="chip ${x.symbol===chartSym?"on":""}" data-csym="${esc(x.symbol)}">${esc(x.symbol)}</button>`).join("")}</div>
+    <div class="frow"><label class="field"><select id="csel" aria-label="Pick a stock">${picks.map(x => `<option ${x.symbol===chartSym?"selected":""}>${esc(x.symbol)}</option>`).join("")}</select></label></div>
+    <div class="card" style="padding:12px 10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:0 4px">
+        <div><b style="font-size:18px">${esc(p.symbol)}</b> <span class="num">${num(p.price)}</span> <span class="small ${cls(p.change_pct)}">${pct(p.change_pct)}</span><div class="tiny">Daily candles · last ~6 months</div></div>${p.label ? labChip(p.label) : ""}</div>
+      <div class="chartwrap" id="lwc"><div class="empty"><span class="spin"></span></div></div>
+      <div class="chartlegend"><span><i style="background:var(--accent-ink)"></i>20-day avg</span><span><i style="background:#f59e0b"></i>50-day avg</span><span>▲ buy · ▼ sell signals (SB/SS = strong)</span></div>
+      <div class="toggles"><button class="chip ${chartOpts.ma?"on":""}" data-copt="ma">Averages</button><button class="chip ${chartOpts.markers?"on":""}" data-copt="markers">Signals</button><button class="chip ${chartOpts.levels?"on":""}" data-copt="levels">Stop / target</button></div>
+      <div id="chartnote" class="tiny" style="margin-top:6px"></div></div>
+    ${p.score !== undefined ? `<div class="card"><b>${term("score","Score")} over time</b><div id="scoreline" style="margin-top:8px"></div></div>
+    <div class="card">${scoreHead(p)}${scoreBar(p.score)}${fchips(p)}
+      ${pl ? `<div class="kv2"><div class="kv"><div class="k">${term("stop","Stop")}</div><div class="v down">${num(pl.stop)}</div></div><div class="kv"><div class="k">${term("target","Target")}</div><div class="v up">${num(pl.target)}</div></div><div class="kv"><div class="k">${term("rr","R : R")}</div><div class="v">${rrText(pl)}</div></div></div>` : ""}
+      <div class="btns"><button class="btn" data-sym="${esc(p.symbol)}">Full breakdown</button>${sideOf(p.label) === "buy" && pl && !practice().positions.some(x => x.symbol === p.symbol) ? `<button class="btn good" data-buy="${esc(p.symbol)}">Practice buy</button>` : ""}</div></div>` : ""}`;
+  let data;
+  try {
+    [data] = await Promise.all([loadCharts(market), loadLWC()]);
+  } catch(e){ $("lwc").innerHTML = `<div class="empty">${esc(e.message)}</div>`; return; }
+  if (view !== "chart" || chartSym !== p.symbol) return;
+  const c = data && data[p.symbol];
+  if (!c){ $("lwc").innerHTML = `<div class="empty">No chart data for ${esc(p.symbol)} yet. Run a new scan (↻).</div>`; return; }
+  $("lwc").innerHTML = "";
+  const L = window.LightweightCharts, good = css("--good"), bad = css("--bad"), line = css("--line"), ink3 = css("--ink-3");
+  chartObj = L.createChart($("lwc"), {autoSize: true, layout: {background: {color: "transparent"}, textColor: ink3, fontSize: 11},
+    grid: {vertLines: {color: line}, horzLines: {color: line}}, rightPriceScale: {borderColor: line}, timeScale: {borderColor: line},
+    crosshair: {mode: 0}, localization: {priceFormatter: v => num(v)}});
+  const cs = chartObj.addCandlestickSeries({upColor: good, downColor: bad, borderVisible: false, wickUpColor: good, wickDownColor: bad});
+  cs.priceScale().applyOptions({scaleMargins: {top: 0.06, bottom: 0.24}});
+  cs.setData(c.bars.map(b => ({time: b[0], open: b[1], high: b[2], low: b[3], close: b[4]})));
+  const vs = chartObj.addHistogramSeries({priceFormat: {type: "volume"}, priceScaleId: "", lastValueVisible: false, priceLineVisible: false});
+  vs.priceScale().applyOptions({scaleMargins: {top: 0.8, bottom: 0}});
+  vs.setData(c.bars.map(b => ({time: b[0], value: b[5], color: b[4] >= b[1] ? "rgba(34,197,94,.45)" : "rgba(239,68,68,.45)"})));
+  if (chartOpts.ma){
+    const ls = (arr, color) => { const s = chartObj.addLineSeries({color, lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false});
+      s.setData(c.bars.map((b, i) => ({time: b[0], value: arr[i]})).filter(x => x.value != null)); };
+    ls(c.ma20, css("--accent-ink")); ls(c.ma50, "#f59e0b");
+  }
+  if (chartOpts.markers) cs.setMarkers((c.markers || []).map(([d, l]) => {
+    const buy = sideOf(l) === "buy";
+    return {time: d, position: buy ? "belowBar" : "aboveBar", color: buy ? good : bad, shape: buy ? "arrowUp" : "arrowDown",
+            text: {STRONG_BUY: "SB", BUY: "B", SELL: "S", STRONG_SELL: "SS"}[l]};
+  }));
+  if (chartOpts.levels && pl && sideOf(p.label) !== "sell"){
+    cs.createPriceLine({price: pl.stop, color: bad, lineStyle: 2, lineWidth: 1, axisLabelVisible: true, title: "Stop"});
+    cs.createPriceLine({price: pl.target, color: good, lineStyle: 2, lineWidth: 1, axisLabelVisible: true, title: "Target"});
+  }
+  chartObj.timeScale().fitContent();
+  $("chartnote").textContent = c.hl ? "" : "This data source has no daily high/low, so the candles show open to close only.";
+  if ($("scoreline")) $("scoreline").innerHTML = scoreLine(c.scores, c.bars.map(b => b[0]));
+}
+
+// ============================================================ detail sheet
 function openPick(sym){
   const p = (RES[market]?.picks || []).find(x => x.symbol === sym);
   if (!p){ closeSheet(); return; }
   openSym = sym;
-  const s = SIG[p.signal], held = practiceView().positions.find(x => x.symbol === sym), pl = planFor(p);
-  const icon = {setup:"breakout", volume:"volume", mood:"mood", liquid:"liquid", odds:"odds"};
-  let h = `<button class="close" id="closeSheet" aria-label="Close">✕</button><h2>${esc(p.symbol)} ${p.watch?"★":""}</h2>
-    <div class="muted">${num(p.price)} <span class="${cls(p.change_pct)}">${pct(p.change_pct)}</span> today · ${esc(p.date)}</div>
-    <div class="verdict ${p.signal}"><div class="v">${s.e} ${s.t}</div><div class="small">${p.setups.length ? `${p.passed} of ${p.checks.length} checks passed` : s.sub}</div>
-    <div style="margin-top:6px">${esc(p.reason)}.</div></div>`;
+  const side = sideOf(p.label), held = practiceView().positions.find(x => x.symbol === sym), pl = planFor(p);
+  let h = `<div class="grab"></div><button class="close" id="closeSheet" aria-label="Close">✕</button><h2>${esc(p.symbol)} ${p.watch ? "★" : ""}</h2>
+    <div class="muted num">${num(p.price)} <span class="${cls(p.change_pct)}">${pct(p.change_pct)}</span> · ${esc(p.date)}</div>`;
+  if (p.score !== undefined){
+    h += `<div class="verdict ${side || ""}"><div style="display:flex;justify-content:space-between;align-items:center"><div class="v">${LABEL[p.label].e} ${LABEL[p.label].t}</div><div class="v num">${p.score > 0 ? "+" : ""}${p.score}</div></div>
+      <div style="margin-top:8px">${scoreBar(p.score)}</div>
+      <div class="small" style="margin-top:8px">${(RES[market].regime ? `Market: ${esc(RES[market].regime.label)}. ` : "")}${p.label_record && p.label_record.times ? `In the past, this stock's ${LABEL[p.label].t} signals worked ${p.label_record.win} of ${p.label_record.times} times.` : ""}</div></div>`;
+    h += `<h3>Why: the 7 factors</h3>` + (p.factors || []).map(f => {
+      const w = Math.abs(f.pts) / f.max * 50, col = f.pts >= 0 ? "var(--good)" : "var(--bad)";
+      return `<div class="factor"><div><b>${term(f.key, esc(f.label))}</b> <span class="tiny">/ ${f.max}</span><div class="small muted">${esc(f.detail)}</div></div>
+        <div class="pts ${f.pts > 0 ? "up" : f.pts < 0 ? "down" : ""}">${f.pts > 0 ? "+" : ""}${f.pts}</div>
+        <div class="fb"><i style="${f.pts >= 0 ? "left:50%" : `left:${50 - w}%`};width:${w}%;background:${col}"></i></div></div>`;
+    }).join("");
+  }
   h += p.warnings.map(w => `<div class="warnbox">⚠️ ${esc(w)} ${w.includes("price limit") ? term("limit","(?)") : ""}</div>`).join("");
-  if (held) h += `<div class="warnbox">You hold ${held.shares} in practice: ${sigChip(held.signal)} ${esc(held.why)}</div>`;
-  h += `<h3>Checklist</h3>` + p.checks.map(c => `<div class="check"><div class="ic">${c.ok?"✅":"❌"}</div><div><b>${term(icon[c.key], esc(c.label))}</b><div class="small muted">${esc(c.detail)}</div></div></div>`).join("");
+  if (held) h += `<div class="warnbox">You hold ${held.shares} in practice: <b>${held.signal}</b>. ${esc(held.why)}</div>`;
   if (pl){
-    h += `<h3>If you buy (practice)</h3><div class="grid2">
-      <div class="kv"><div class="k">${term("shares","Buy")}</div><div class="v">${pl.shares.toLocaleString()} shares @ ${num(pl.entry)}</div><div class="tiny">${money(pl.cost)}</div></div>
-      <div class="kv"><div class="k">Hold up to</div><div class="v">${pl.hold_days} trading days</div></div>
-      <div class="kv"><div class="k">${term("stop","Stop-loss")} (sell if it falls to)</div><div class="v down">${num(pl.stop)}</div></div>
-      <div class="kv"><div class="k">${term("target","Target")} (sell if it rises to)</div><div class="v up">${num(pl.target)}</div></div></div>
-      <div class="money">Risk <b class="down">${money(pl.risk_money)}</b> to make <b class="up">${money(pl.reward_money)}</b>
-      <div class="tiny">After ${term("fees","fees")} (${money(pl.fees_round_trip)}) and ${term("cgt","tax on profit")} (${money(pl.tax_if_win)}).</div></div>`;
+    h += `<h3>If you buy (practice)</h3><div class="kv2">
+      <div class="kv"><div class="k">${term("shares","Shares")}</div><div class="v">${pl.shares.toLocaleString()}</div></div>
+      <div class="kv"><div class="k">${term("stop","Stop-loss")}</div><div class="v down">${num(pl.stop)}</div></div>
+      <div class="kv"><div class="k">${term("target","Target")}</div><div class="v up">${num(pl.target)}</div></div></div>
+      <div class="kv" style="margin-top:8px">Risk <b class="down">${money(pl.risk_money)}</b> to make <b class="up">${money(pl.reward_money)}</b> · ${term("rr","R : R")} <b>${rrText(pl)}</b>
+      <div class="tiny">Cost ${money(pl.cost)} · after ${term("fees","fees")} (${money(pl.fees_round_trip)}) and ${term("cgt","tax on profit")} (${money(pl.tax_if_win)}) · hold up to ${pl.hold_days} trading days</div></div>`;
   } else h += `<div class="warnbox">Your practice cash, budget or max loss is too small for even one lot of ${esc(p.symbol)} with this stop.</div>`;
   if (p.sim){
     const t = p.sim.target, st = p.sim.stop, f = p.sim.flat;
     h += `<h3>${term("sim","Simulator")}</h3><div class="small" style="margin-bottom:6px">In 100 replays of the next ${CFG.rules.max_hold_days} trading days: <b>${Math.round(t)}</b> hit the target, <b>${Math.round(st)}</b> hit the stop, <b>${Math.round(f)}</b> ended in between.</div>
-      <div class="bar" role="img" aria-label="Target first ${t}%, stop first ${st}%, neither ${f}%"><div style="width:${t}%;background:var(--good)"></div><div style="width:${st}%;background:var(--bad)"></div><div style="width:${f}%;background:var(--none)"></div></div>
-      <div class="legend"><span><i class="sw" style="background:var(--good)"></i>Target first ${t}%</span><span><i class="sw" style="background:var(--bad)"></i>Stop first ${st}%</span><span><i class="sw" style="background:var(--none)"></i>Neither ${f}%</span></div>`;
+      <div class="bar"><div style="width:${t}%;background:var(--good)"></div><div style="width:${st}%;background:var(--bad)"></div><div style="width:${f}%;background:var(--none)"></div></div>
+      <div class="legend"><span><i class="sw" style="background:var(--good)"></i>Target ${t}%</span><span><i class="sw" style="background:var(--bad)"></i>Stop ${st}%</span><span><i class="sw" style="background:var(--none)"></i>Neither ${f}%</span></div>`;
   }
-  if (p.history){
-    const hs = p.history;
-    h += `<h3>${term("history","Track record")}</h3><div class="small">` + (hs.times
-      ? `This ${p.setups.length ? "setup" : "kind of setup"} appeared <b>${hs.times}</b> times in the price history: <b>${hs.target}</b> hit the target, <b>${hs.stop}</b> hit the stop, <b>${hs.neither}</b> neither.`
-      : `Not enough past examples to judge.`) + `</div>`;
-  }
-  h += `<div class="actions">`;
-  if (held) h += `<button class="btn danger" data-sell="${esc(p.symbol)}">Practice sell ${held.shares} @ ${num(p.price)}</button>`;
-  else if (pl) h += p.signal === "BUY" ? `<button class="btn primary" data-buy="${esc(p.symbol)}">Practice buy ${pl.shares.toLocaleString()} shares</button>`
-                                       : `<button class="btn" data-buy="${esc(p.symbol)}">Practice buy anyway</button>`;
-  if (GH.token) h += p.watch ? `<button class="btn" data-unwatch="${esc(p.symbol)}">Remove from watchlist</button>` : `<button class="btn" data-watch="${esc(p.symbol)}">★ Add to watchlist</button>`;
-  h += `</div><div class="foot">A green BUY means <i>your rules are met</i>, not that the price will rise. Some trades will hit the stop. Practice trades use pretend money. Not financial advice.</div>`;
+  h += `<details><summary>${term("setup","Setup checklist")} · ${p.passed} of ${p.checks.length} passed</summary>` +
+    p.checks.map(c => `<div class="check"><div class="ic">${c.ok ? "✅" : "❌"}</div><div><b>${esc(c.label)}</b><div class="small muted">${esc(c.detail)}</div></div></div>`).join("") +
+    (p.history && p.history.times ? `<div class="small muted" style="margin-top:6px">This setup appeared ${p.history.times} times before: ${p.history.target} hit the target, ${p.history.stop} the stop.</div>` : "") + `</details>`;
+  h += `<div class="btns">`;
+  if (held) h += `<button class="btn danger" data-sell="${esc(p.symbol)}">Practice sell</button>`;
+  else if (pl) h += `<button class="btn ${side === "buy" ? "good" : ""}" data-buy="${esc(p.symbol)}">${side === "buy" ? "Practice buy" : "Practice buy anyway"}</button>`;
+  h += `<button class="btn" data-chart="${esc(p.symbol)}">Chart</button></div>`;
+  if (GH.token) h += `<div class="btns">${p.watch ? `<button class="btn" data-unwatch="${esc(p.symbol)}">Remove from watchlist</button>` : `<button class="btn" data-watch="${esc(p.symbol)}">★ Add to watchlist</button>`}</div>`;
+  h += `<div class="foot">A signal means the rules are met, not that the price will move. Some trades will hit the stop. Not financial advice.</div>`;
   $("sheet").innerHTML = h; $("sheet").classList.add("on"); $("overlay").classList.add("on");
 }
 function closeSheet(){ openSym = null; $("sheet").classList.remove("on"); $("overlay").classList.remove("on"); }
-function renderPlan(){
-  const P = practiceView(), el = $("tab-plan");
-  if (!P.positions.length){ el.innerHTML = `<div class="empty">No open ${term("practice","practice trades")}.<br>Tap a 🟢 BUY pick and press <b>Practice buy</b>.</div>`; return; }
-  el.innerHTML = `<div class="tiny" style="margin:10px 2px">${term("hold","HOLD / SELL")} uses the latest scan's prices.</div>` + P.positions.map(p => {
+
+// ============================================================ journal
+function renderJournal(){
+  const P = practiceView(), el = $("view-journal");
+  let h = `<div class="sect"><span>Open practice trades</span><span class="tiny">${term("hold","HOLD / SELL")}</span></div>`;
+  h += P.positions.length ? P.positions.map(p => {
     const pos = Math.max(0, Math.min(100, (p.price - p.stop) / (p.target - p.stop) * 100));
+    const q = (RES[market]?.picks || []).find(x => x.symbol === p.symbol);
     return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-        <div>${sigChip(p.signal)} <span class="sym">${esc(p.symbol)}</span> <span class="small muted">${p.shares.toLocaleString()} shares · ${p.days} day(s)</span></div>
-        <div class="price"><b class="${cls(p.pnl)}">${money(p.pnl, true)}</b><div class="small ${cls(p.pnl)}">${pct(p.pnl_pct)}</div></div></div>
+        <div><span class="lab ${p.signal === "SELL" ? "STRONG_SELL" : "HOLD"}">${p.signal}</span> <b style="font-size:16px">${esc(p.symbol)}</b>
+        <div class="tiny">${p.shares.toLocaleString()} shares · ${p.days} day(s)${q && q.label ? ` · now ${LABEL[q.label].t} (${q.score > 0 ? "+" : ""}${q.score})` : ""}</div></div>
+        <div class="num" style="text-align:right"><b class="${cls(p.pnl)}">${money(p.pnl, true)}</b><div class="small ${cls(p.pnl)}">${pct(p.pnl_pct)}</div></div></div>
       <div class="small muted" style="margin-top:6px">${esc(p.why)}</div><div class="range"><i style="left:${pos}%"></i></div>
       <div class="rangelbl"><span>Stop ${num(p.stop)}</span><span>Bought ${num(p.entry)} · now ${num(p.price)}</span><span>Target ${num(p.target)}</span></div>
-      <div class="actions"><button class="btn ${p.signal==="SELL"?"danger":""}" data-sell="${esc(p.symbol)}">Practice sell @ ${num(p.price)}</button>
-      <button class="btn" data-open="${esc(p.symbol)}">View signal</button></div></div>`; }).join("");
+      <div class="btns"><button class="btn ${p.signal === "SELL" ? "danger" : ""}" data-sell="${esc(p.symbol)}">Sell @ ${num(p.price)}</button><button class="btn" data-chart="${esc(p.symbol)}">Chart</button></div></div>`;
+  }).join("") : `<div class="card empty">No open ${term("practice","practice trades")}. Tap a ▲ Buy signal and press <b>Practice buy</b>.</div>`;
+  h += `<div class="sect"><span>Closed trades</span><span class="tiny">${P.closed.length}</span></div><div class="card">` + (P.closed.length
+    ? `<div style="overflow:auto"><table><tr><th>Stock</th><th class="r">Bought</th><th class="r">Sold</th><th class="r">Result</th></tr>` +
+      P.closed.map(t => `<tr><td><b>${esc(t.symbol)}</b><div class="tiny">${esc(t.opened)} → ${esc(t.closed)}</div><div class="tiny">${esc(t.exit_reason)}</div></td><td class="r">${num(t.entry)}</td><td class="r">${num(t.exit)}</td>
+        <td class="r ${cls(t.net)}"><b>${money(t.net, true)}</b><div class="tiny">${pct(t.pct)}</div></td></tr>`).join("") + `</table></div>`
+    : `<div class="empty">Your journal fills in as you sell practice trades.</div>`) + `</div>`;
+  el.innerHTML = h;
+}
+
+// ============================================================ stats + settings
+const RIGHT = ["win", "expired_good", "flipped_good"], WRONG = ["loss", "expired_bad", "flipped_bad"];
+function statusChip(s){
+  if (s === "open") return `<span class="lab open">Open</span>`;
+  if (RIGHT.includes(s)) return `<span class="lab good">${s === "win" ? "Hit target" : "Right"}</span>`;
+  return `<span class="lab bad">${s === "loss" ? "Hit stop" : "Wrong"}</span>`;
+}
+function liveStats(){
+  const es = ((SIGLOG[market] || {}).entries || []);
+  const rows = ["STRONG_BUY", "BUY", "SELL", "STRONG_SELL"].map(l => {
+    const x = es.filter(e => e.label === l), closed = x.filter(e => e.status !== "open"), right = closed.filter(e => RIGHT.includes(e.status)).length;
+    return {l, n: x.length, open: x.length - closed.length, closed: closed.length, right, rate: closed.length ? Math.round(100 * right / closed.length) : null};
+  });
+  return {es, rows};
 }
 function equityChart(pts, start){
-  if (pts.length < 2) return `<div class="tiny">The chart appears after a second day of scans or trades.</div>`;
+  if (pts.length < 2) return `<div class="tiny" style="margin-top:6px">The chart appears after a second day of scans or trades.</div>`;
   const W = 640, H = 190, L = 8, R = 8, T = 12, B = 22;
   const vals = pts.map(p => p.v), lo = Math.min(...vals, start), hi = Math.max(...vals, start), pad = (hi - lo) * 0.1 || hi * 0.01;
   const y = v => T + (H - T - B) * (1 - (v - (lo - pad)) / ((hi + pad) - (lo - pad)));
   const x = i => L + i * (W - L - R) / (pts.length - 1);
   const d = pts.map((p,i) => `${i?"L":"M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(""), ys = y(start);
-  return `<div class="chartbox" id="eqbox"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Practice balance over time">
-    <line x1="${L}" x2="${W-R}" y1="${ys}" y2="${ys}" stroke="var(--line)" stroke-dasharray="4 4"/><text x="${W-R}" y="${ys-4}" text-anchor="end" font-size="11" fill="var(--ink-3)">start ${money(start)}</text>
-    <path d="${d}" fill="none" stroke="var(--series)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-    <text x="${L}" y="${H-6}" font-size="11" fill="var(--ink-3)">${esc(pts[0].d)}</text><text x="${W-R}" y="${H-6}" font-size="11" fill="var(--ink-3)" text-anchor="end">${esc(pts[pts.length-1].d)}</text>
-    <line id="eqx" y1="${T}" y2="${H-B}" stroke="var(--ink-3)" stroke-width="1" visibility="hidden"/><circle id="eqdot" r="5" fill="var(--series)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>
-    <rect x="0" y="0" width="${W}" height="${H}" fill="transparent" id="eqhit"/></svg><div class="tt" id="eqtt"></div></div>`;
+  return `<div class="chartbox"><svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Practice balance over time">
+    <line x1="${L}" x2="${W-R}" y1="${ys}" y2="${ys}" stroke="var(--line)" stroke-dasharray="4 4"/><text x="${W-R}" y="${ys-4}" text-anchor="end" font-size="12" fill="var(--ink-3)">start ${money(start)}</text>
+    <path d="${d}" fill="none" stroke="var(--series)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <text x="${L}" y="${H-6}" font-size="12" fill="var(--ink-3)">${esc(pts[0].d)}</text><text x="${W-R}" y="${H-6}" font-size="12" fill="var(--ink-3)" text-anchor="end">${esc(pts[pts.length-1].d)}</text></svg></div>`;
 }
-function wireEquity(pts){
-  const hit = document.getElementById("eqhit"); if (!hit) return;
-  const svg = hit.ownerSVGElement, tt = $("eqtt"), W = 640, L = 8, R = 8;
-  const segs = svg.querySelector("path").getAttribute("d").split(/[ML]/).filter(Boolean).map(s => s.split(",").map(Number));
-  const show = ev => {
-    const rc = svg.getBoundingClientRect(), sx = (ev.clientX - rc.left) / rc.width * W;
-    const i = Math.max(0, Math.min(pts.length-1, Math.round((sx - L) / (W - L - R) * (pts.length - 1)))), [px, py] = segs[i];
-    $("eqx").setAttribute("x1", px); $("eqx").setAttribute("x2", px); $("eqx").setAttribute("visibility","visible");
-    $("eqdot").setAttribute("cx", px); $("eqdot").setAttribute("cy", py); $("eqdot").setAttribute("visibility","visible");
-    tt.style.display = "block"; tt.style.left = (px / W * rc.width) + "px"; tt.style.top = (py / 190 * rc.height) + "px"; tt.textContent = `${pts[i].d}: ${money(pts[i].v)}`;
-  };
-  hit.addEventListener("pointermove", show); hit.addEventListener("pointerdown", show);
-  hit.addEventListener("pointerleave", () => { tt.style.display = "none"; $("eqx").setAttribute("visibility","hidden"); $("eqdot").setAttribute("visibility","hidden"); });
+function pushCard(){
+  const ok = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  const lv = PUSH.levels || [], all = lv.includes("BUY");
+  if (!ok) return `<div class="card"><b>${term("push","Notifications")}</b><div class="small muted" style="margin-top:6px">This browser can't receive push notifications. On Android, open this page in Chrome and add it to your Home screen.</div></div>`;
+  if (!CFG || !CFG.push || !CFG.push.vapid_public_key) return `<div class="card"><b>${term("push","Notifications")}</b><div class="small muted" style="margin-top:6px">Not set up in config.json yet.</div></div>`;
+  return `<div class="card"><b>${term("push","Notifications")}</b>
+    <div class="switch"><div><div>Signal alerts on this phone</div><div class="tiny">${PUSH.on ? "On" : "Off"}${Notification.permission === "denied" ? " · blocked in browser settings" : ""}</div></div><input type="checkbox" class="tg" id="pushOn" ${PUSH.on ? "checked" : ""}></div>
+    <div class="switch"><div><div>Include Buy and Sell</div><div class="tiny">${all ? "Strong and normal signals" : "Only Strong buy and Strong sell"}</div></div><input type="checkbox" class="tg" id="pushAll" ${all ? "checked" : ""}></div>
+    <div class="switch"><div><div>Watchlist only</div><div class="tiny">Ignore stocks outside your watchlist</div></div><input type="checkbox" class="tg" id="pushWatch" ${PUSH.watch_only ? "checked" : ""}></div>
+    <div class="switch"><div><div>Markets</div><div class="tiny">${(PUSH.markets || []).join(" + ") || "none"}</div></div>
+      <div class="toggles">${["PSX","US"].map(k => `<button class="chip ${(PUSH.markets||[]).includes(k)?"on":""}" data-pmkt="${k}">${k}</button>`).join("")}</div></div>
+    ${PUSH.on ? `<div class="btns"><button class="btn" id="pushTest">Send a test</button></div>` : ""}
+    <div class="tiny" style="margin-top:8px">Alerts arrive after each scan: about 4:45 PM for PSX and 2:30 AM for US, and when you tap ↻.</div></div>`;
 }
-function renderResults(){
-  const P = practiceView(), st = P.stats, s = settings(), el = $("tab-results");
-  let h = `<div class="tiles" style="margin-top:12px">
-    <div class="tile"><div class="k">Practice balance</div><div class="v">${money(P.equity_now)}</div><div class="small ${cls(P.total_pnl)}">${money(P.total_pnl, true)} since start</div></div>
-    <div class="tile"><div class="k">Cash</div><div class="v">${money(P.cash)}</div><div class="tiny">${P.positions.length} open trade(s)</div></div>
+function renderStats(){
+  const el = $("view-stats"), r = RES[market], P = practiceView(), st = P.stats, s = settings();
+  const L = liveStats();
+  let h = `<div class="sect"><span>${term("siglog","Live signal record")} · ${esc(market)}</span><span class="tiny">${L.es.length} signals</span></div><div class="card">`;
+  h += L.es.length ? `<table><tr><th>Signal</th><th class="r">Given</th><th class="r">Closed</th><th class="r">Right</th></tr>` +
+      L.rows.map(x => `<tr><td>${labChip(x.l)}</td><td class="r">${x.n}</td><td class="r">${x.closed}</td><td class="r"><b>${x.rate == null ? "–" : x.rate + "%"}</b></td></tr>`).join("") + `</table>
+      <div class="tiny" style="margin-top:8px">Recent</div>` +
+      L.es.slice(-8).reverse().map(e => `<div class="row" data-sym="${esc(e.symbol)}" style="padding:8px 0;min-height:0"><div class="nm"><b>${esc(e.symbol)}</b> <span class="tiny">${esc(e.date)} · ${LABEL[e.label].t} ${e.score > 0 ? "+" : ""}${e.score}</span>
+        <div class="tiny">at ${num(e.price)}${e.exit != null ? ` → ${num(e.exit)}` : e.last != null ? ` · now ${num(e.last)}` : ""}</div></div>${statusChip(e.status)}</div>`).join("")
+    : `<div class="small muted">Starts filling from the next scan. Each signal is checked on later scans against its stop and target.</div>`;
+  h += `</div>`;
+  const bt = r && r.backtest;
+  if (bt) h += `<div class="sect"><span>${term("backtest","Back-test")} · last ~2 years</span><span class="tiny">${esc(market)} list</span></div><div class="card"><table><tr><th>Signal</th><th class="r">Times</th><th class="r">Worked</th><th class="r">Avg R</th></tr>` +
+    ["STRONG_BUY","BUY","SELL","STRONG_SELL"].map(l => { const x = bt[l] || {}; return `<tr><td>${labChip(l)}</td><td class="r">${x.n ?? "–"}</td><td class="r">${x.win_rate == null ? "–" : x.win_rate + "%"}</td><td class="r ${cls(x.avg_r)}"><b>${x.avg_r == null ? "–" : (x.avg_r > 0 ? "+" : "") + x.avg_r}</b></td></tr>`; }).join("") +
+    `</table><div class="tiny" style="margin-top:8px">With a 2× target, a signal type that works about 35% of the time or more breaks even before fees. Avg R above 0 is the number to watch.</div></div>`;
+  h += `<div class="sect"><span>Practice account · ${esc(market)}</span></div><div class="tiles">
+    <div class="tile"><div class="k">Balance</div><div class="v">${money(P.equity_now)}</div><div class="small ${cls(P.total_pnl)}">${money(P.total_pnl, true)}</div></div>
     <div class="tile"><div class="k">${term("winrate","Win rate")}</div><div class="v">${st.win_rate == null ? "–" : st.win_rate + "%"}</div><div class="tiny">${st.wins} won · ${st.losses} lost</div></div>
-    <div class="tile"><div class="k">Avg win vs avg loss</div><div class="v" style="font-size:16px"><span class="up">${money(st.avg_win)}</span> / <span class="down">${money(st.avg_loss)}</span></div><div class="tiny">Wins should be bigger than losses</div></div></div>`;
-  h += `<div class="card"><b>Practice balance over time</b>${equityChart(P.equity, P.start_cash)}</div>`;
-  h += `<div class="card"><b>Closed trades</b>` + (P.closed.length ? `<div style="overflow:auto"><table><tr><th>Stock</th><th class="r">Bought</th><th class="r">Sold</th><th class="r">Result</th><th>Why sold</th></tr>` +
-     P.closed.map(t => `<tr><td><b>${esc(t.symbol)}</b><div class="tiny">${esc(t.opened)} → ${esc(t.closed)}</div></td><td class="r">${num(t.entry)}</td><td class="r">${num(t.exit)}</td>
-       <td class="r ${cls(t.net)}"><b>${money(t.net, true)}</b><div class="tiny">${pct(t.pct)}</div></td><td class="small muted">${esc(t.exit_reason)}</td></tr>`).join("") + `</table></div>`
-     : `<div class="empty">No closed trades yet. Your journal fills in as you sell practice trades.</div>`) + `</div>`;
-  h += `<div class="card"><b>Settings (${esc(market)}) · saved on this phone</b>
-    <div class="row" style="margin-top:10px">
+    <div class="tile"><div class="k">Avg win</div><div class="v up" style="font-size:17px">${money(st.avg_win)}</div></div>
+    <div class="tile"><div class="k">Avg loss</div><div class="v down" style="font-size:17px">${money(st.avg_loss)}</div></div></div>
+    <div class="card"><b>Balance over time</b>${equityChart(P.equity, P.start_cash)}</div>`;
+  h += `<div class="sect"><span>Settings</span></div>` + pushCard();
+  h += `<div class="card"><b>Appearance</b><div class="switch"><div>Dark mode</div><input type="checkbox" class="tg" id="themeTg" ${LS.get("ss_theme","dark") === "dark" ? "checked" : ""}></div></div>`;
+  h += `<div class="card"><b>Trading money (${esc(market)}) · saved on this phone</b>
+    <div class="frow" style="margin-top:10px">
       <label class="field"><span class="small muted">Budget (${esc(cur())})</span><input id="setBudget" type="number" inputmode="decimal" min="1" value="${s.budget}"></label>
       <label class="field"><span class="small muted">Max loss per trade (${esc(cur())})</span><input id="setLoss" type="number" inputmode="decimal" min="1" value="${s.max_loss}"></label>
-      <button class="btn primary" id="saveSettings">Save</button></div>
-    <div class="tiny" style="margin-top:6px">Position sizes update straight away. A new budget becomes your practice cash when you reset the practice account.</div></div>`;
-  h += `<div class="card"><b>${term("token","Connect GitHub")}</b> ${GH.token ? `<span class="small up">✓ connected to ${esc(GH.repo)}</span>` : `<span class="small muted">· not connected</span>`}
-    <div class="small muted" style="margin:6px 0 10px">Your private repository and key. The key is saved only in this phone's browser.</div>
-    <div class="row">
+      <button class="btn primary" id="saveSettings">Save</button></div></div>`;
+  h += `<div class="card"><b>${term("token","GitHub connection")}</b> ${GH.token ? `<span class="small up">✓ ${esc(GH.repo)}</span>` : `<span class="small muted">· not connected</span>`}
+    <div class="frow" style="margin-top:10px">
       <label class="field"><span class="small muted">Repository</span><input id="ghRepo" placeholder="username/stock-scanner" value="${esc(GH.repo)}" autocapitalize="off" autocomplete="off"></label>
-      <label class="field"><span class="small muted">GitHub key</span><input id="ghToken" type="password" placeholder="${GH.token ? "•••••••• (saved)" : "github_pat_…"}" autocomplete="off"></label>
-      <button class="btn primary" id="ghSave">${GH.token ? "Update" : "Connect"}</button>
-      ${GH.token ? `<button class="btn" id="ghForget">Disconnect</button>` : ""}</div>
+      <label class="field"><span class="small muted">GitHub key</span><input id="ghToken" type="password" placeholder="${GH.token ? "•••••••• (saved)" : "github_pat_…"}" autocomplete="off"></label></div>
+    <div class="btns"><button class="btn primary" id="ghSave">${GH.token ? "Update" : "Connect"}</button>${GH.token ? `<button class="btn" id="ghForget">Disconnect</button>` : ""}</div>
     ${runInfo ? `<div class="tiny" style="margin-top:8px"><a href="${esc(runInfo)}" target="_blank" rel="noopener">Last scan log on GitHub</a></div>` : ""}</div>`;
-  h += `<div class="card"><b>Practice data</b><div class="small muted" style="margin:6px 0 10px">Your practice trades live in this phone's browser. Export a backup now and then; clearing browser data deletes them.</div>
-    <div class="row"><button class="btn" id="exportData">⬇ Export backup</button><button class="btn" id="importData">⬆ Import backup</button>
-    <button class="btn" id="resetPractice">${resetArmed ? "Tap again to reset" : "Reset " + esc(market) + " practice account"}</button></div></div>`;
-  el.innerHTML = h; wireEquity(P.equity);
+  h += `<div class="card"><b>Practice data</b><div class="small muted" style="margin:6px 0 4px">Saved in this phone's browser. Export a backup now and then.</div>
+    <div class="btns"><button class="btn" id="exportData">⬇ Export</button><button class="btn" id="importData">⬆ Import</button></div>
+    <div class="btns"><button class="btn" id="resetPractice">${resetArmed ? "Tap again to reset" : "Reset " + esc(market) + " practice"}</button></div></div>`;
+  el.innerHTML = h;
+}
+
+// ============================================================ push notifications
+function urlB64(s){ const p = "=".repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(b, c => c.charCodeAt(0)); }
+async function subsFile(){
+  const r = await fetch("https://api.github.com/repos/" + GH.repo + "/contents/push/subscriptions.json?ref=" + encodeURIComponent(GH.branch), {cache: "no-store", headers: ghHeaders(false)});
+  if (r.status === 404) return {data: {subs: []}, sha: null};
+  if (!r.ok) throw new Error("Couldn't read your notification settings on GitHub (error " + r.status + ").");
+  const j = await r.json();
+  return {data: JSON.parse(b64dec(j.content)), sha: j.sha};
+}
+async function saveSubs(fn, message){
+  for (let i = 0; i < 2; i++){
+    const {data, sha} = await subsFile();
+    fn(data);
+    const r = await fetch("https://api.github.com/repos/" + GH.repo + "/contents/push/subscriptions.json", {method: "PUT",
+      headers: Object.assign(ghHeaders(false), {"Content-Type": "application/json"}),
+      body: JSON.stringify(Object.assign({message, content: b64enc(JSON.stringify(data, null, 1) + "\n"), branch: GH.branch}, sha ? {sha} : {}))});
+    if (r.ok) return;
+    if (r.status !== 409) throw new Error("Couldn't save notification settings on GitHub (error " + r.status + "). Your key needs Contents: read and write.");
+  }
+  throw new Error("GitHub was busy saving. Try again.");
+}
+async function swReg(){ return navigator.serviceWorker.register("sw.js"); }
+async function pushSync(){
+  const reg = await swReg(); await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) sub = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: urlB64(CFG.push.vapid_public_key)});
+  const j = sub.toJSON();
+  await saveSubs(d => {
+    d.subs = (d.subs || []).filter(x => x.endpoint !== j.endpoint);
+    d.subs.push({endpoint: j.endpoint, keys: j.keys, levels: PUSH.levels, markets: PUSH.markets, watch_only: !!PUSH.watch_only,
+                 device: (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || "phone", updated: new Date().toISOString()});
+  }, "Notification settings");
+}
+async function pushToggle(on){
+  if (!GH.token) throw new Error("Connect GitHub first.");
+  if (on){
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") throw new Error("Notifications are blocked. Allow them for this site in Chrome's site settings.");
+    PUSH.on = true; await pushSync();
+  } else {
+    const reg = await navigator.serviceWorker.getRegistration(), sub = reg && await reg.pushManager.getSubscription();
+    if (sub){ const ep = sub.endpoint; await sub.unsubscribe(); await saveSubs(d => { d.subs = (d.subs || []).filter(x => x.endpoint !== ep); }, "Notifications off"); }
+    PUSH.on = false;
+  }
+  LS.set("ss_push", PUSH);
+}
+let pushBusy = false;
+async function pushChange(fn, okMsg){
+  if (pushBusy) return; pushBusy = true;
+  try { await fn(); toast(okMsg); } catch(e){ toast(e.message, 6000); }
+  pushBusy = false; LS.set("ss_push", PUSH); render();
+}
+function openBell(){
+  $("sheet").innerHTML = `<div class="grab"></div><button class="close" id="closeSheet" aria-label="Close">✕</button><h2>Notifications</h2>${pushCard()}`;
+  $("sheet").classList.add("on"); $("overlay").classList.add("on");
 }
 
 // ============================================================ events
 document.addEventListener("click", async ev => {
-  const t = ev.target.closest("button,[data-sym],.term,[data-tab]");
+  const t = ev.target.closest("button,[data-sym],.term,[data-view],[data-chart]");
   if (!t){ hideTip(); return; }
   if (t.classList.contains("term")){ ev.stopPropagation(); showTip(t); return; }
   hideTip();
   const d = t.dataset;
-  if (d.tab){ document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b === t)); ["picks","plan","results"].forEach(k => $("tab-"+k).hidden = k !== d.tab); return; }
   if (t.id === "refresh") return refresh();
+  if (t.id === "bell") return openBell();
   if (t.id === "closeSheet") return closeSheet();
-  if (d.mkt){ if (d.mkt !== market){ closeSheet(); filter = "all"; market = d.mkt; LS.set("ss_market", market); render(); } return; }
-  if (d.filter){ filter = d.filter; renderPicks(); return; }
-  if (d.none){ showNone = d.none === "1"; renderPicks(); return; }
+  if (d.view){ closeSheet(); return showView(d.view); }
+  if (d.mkt){ if (d.mkt !== market){ closeSheet(); scanFilter = "all"; chartSym = null; market = d.mkt; LS.set("ss_market", market); render(); } return; }
+  if (d.filterGo){ scanFilter = d.filterGo; return showView("scanner"); }
+  if (d.filter){ scanFilter = d.filter; renderScanner(); return; }
+  if (d.chart){ closeSheet(); chartSym = d.chart; return showView("chart"); }
+  if (d.csym){ chartSym = d.csym; return renderChart(); }
+  if (d.copt){ chartOpts[d.copt] = !chartOpts[d.copt]; LS.set("ss_chart_opts", chartOpts); return renderChart(); }
+  if (d.pmkt){ const s = new Set(PUSH.markets || []); s.has(d.pmkt) ? s.delete(d.pmkt) : s.add(d.pmkt); PUSH.markets = [...s];
+    if (PUSH.on) return pushChange(pushSync, "Saved"); LS.set("ss_push", PUSH); return render(); }
   if (d.buy) return buy(d.buy);
   if (d.sell) return sell(d.sell);
-  if (d.open) return openPick(d.open);
   if (d.watch || d.unwatch) return watch(d.watch || d.unwatch, !!d.watch);
+  if (t.id === "pushTest"){
+    t.disabled = true;
+    try { await dispatchScan({market: "test-push", extra: ""}); toast("Test sent. It should arrive in about a minute.", 5000); } catch(e){ toast(e.message, 6000); }
+    t.disabled = false; return;
+  }
   if (t.id === "saveSettings"){
     const budget = +$("setBudget").value, max_loss = +$("setLoss").value;
     if (!(budget > 0 && max_loss > 0)) return toast("Numbers must be above zero.");
-    LS.set("ss_settings_" + market, {budget, max_loss}); render(); return toast("Saved.");
+    LS.set("ss_settings_" + market, {budget, max_loss}); render(); return toast("Saved");
   }
   if (t.id === "ghSave"){
     const repo = $("ghRepo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\/$/, ""), tok = $("ghToken").value.trim() || GH.token;
@@ -597,16 +967,27 @@ document.addEventListener("click", async ev => {
   }
   if (t.id === "importData") return $("importFile").click();
   if (t.id === "resetPractice"){
-    if (!resetArmed){ resetArmed = true; renderResults(); setTimeout(() => { resetArmed = false; renderResults(); }, 4000); return; }
+    if (!resetArmed){ resetArmed = true; renderStats(); setTimeout(() => { resetArmed = false; if (view === "stats") renderStats(); }, 4000); return; }
     resetArmed = false; try { localStorage.removeItem("ss_practice_" + market); } catch(e){}
     const a = practice(); recordEquity(a); savePractice(a); render(); return toast("Practice account reset");
   }
   if (d.sym) return openPick(d.sym);
 });
+document.addEventListener("change", ev => {
+  const t = ev.target;
+  if (t.id === "csel"){ chartSym = t.value; renderChart(); }
+  if (t.id === "themeTg"){ LS.set("ss_theme", t.checked ? "dark" : "light"); applyTheme(); render(); }
+  if (t.id === "pushOn") pushChange(() => pushToggle(t.checked), t.checked ? "Notifications on" : "Notifications off");
+  if (t.id === "pushAll"){ PUSH.levels = t.checked ? ["STRONG_BUY","BUY","SELL","STRONG_SELL"] : ["STRONG_BUY","STRONG_SELL"]; PUSH.on ? pushChange(pushSync, "Saved") : (LS.set("ss_push", PUSH), render()); }
+  if (t.id === "pushWatch"){ PUSH.watch_only = t.checked; PUSH.on ? pushChange(pushSync, "Saved") : (LS.set("ss_push", PUSH), render()); }
+});
+document.addEventListener("input", ev => {
+  if (ev.target.id === "scanq"){ scanQuery = ev.target.value.trim(); const pos = ev.target.selectionStart; renderScanner(); const q = $("scanq"); q.focus(); q.setSelectionRange(pos, pos); }
+});
 async function watch(sym, add){
   sym = String(sym).trim().toUpperCase();
   if (!/^[A-Z0-9.\-^]{1,12}$/.test(sym)) return toast("Type a valid symbol, e.g. OGDC or AAPL.");
-  if (!GH.token) return toast("Connect GitHub in My results → Settings to edit the watchlist.");
+  if (!GH.token) return toast("Connect GitHub in Stats → Settings to edit the watchlist.");
   try {
     await editConfig(cfg => { const w = cfg.markets[market].watchlist; cfg.markets[market].watchlist = add ? (w.includes(sym) ? w : w.concat([sym])) : w.filter(s => s !== sym); },
                      (add ? "Add " : "Remove ") + sym + (add ? " to " : " from ") + market + " watchlist");
@@ -636,20 +1017,55 @@ function showTip(el){
 }
 function hideTip(){ $("tip").style.display = "none"; }
 
+// pull down at the top of the page to load the latest results
+(() => {
+  let y0 = null, pulled = 0;
+  const ptr = $("ptr");
+  window.addEventListener("touchstart", e => { y0 = (window.scrollY <= 0 && !$("sheet").classList.contains("on") && !e.target.closest("#lwc")) ? e.touches[0].clientY : null; pulled = 0; }, {passive: true});
+  window.addEventListener("touchmove", e => {
+    if (y0 == null) return;
+    pulled = Math.max(0, e.touches[0].clientY - y0);
+    ptr.style.height = Math.min(44, pulled / 2.2) + "px";
+    ptr.textContent = pulled > 90 ? "Release to load the latest results" : "Pull to load the latest results";
+  }, {passive: true});
+  window.addEventListener("touchend", async () => {
+    if (y0 == null) return;
+    const go = pulled > 90; y0 = null; pulled = 0;
+    if (!go){ ptr.style.height = "0"; return; }
+    ptr.innerHTML = `<span class="spin"></span>`; ptr.style.height = "40px";
+    try { await loadAll(); toast("Up to date"); } catch(e){ toast(e.message, 6000); }
+    ptr.style.height = "0";
+  });
+})();
+
 function welcome(msg){
   document.body.classList.add("locked");
-  $("updated").textContent = ""; $("banners").innerHTML = ""; $("mood").innerHTML = "";
-  ["plan","results"].forEach(k => $("tab-"+k).innerHTML = "");
-  $("tab-picks").hidden = false;
-  $("tab-picks").innerHTML = `<div class="card" style="margin-top:14px"><b>🔒 Connect your private scanner</b>
+  $("updated").textContent = ""; $("banners").innerHTML = "";
+  ["scanner","chart","journal","stats"].forEach(k => { $("view-"+k).innerHTML = ""; $("view-"+k).hidden = true; });
+  $("view-home").hidden = false;
+  $("view-home").innerHTML = `<div class="card" style="margin-top:14px"><b>🔒 Connect your private scanner</b>
     <div class="small muted" style="margin:6px 0 12px">Your scans live in your private GitHub repository. Enter its name and your GitHub key once; the key is saved only in this phone's browser.</div>
     ${msg ? `<div class="banner err">${esc(msg)}</div>` : ""}
-    <div class="row">
+    <div class="frow">
       <label class="field"><span class="small muted">Repository</span><input id="ghRepo" placeholder="username/stock-scanner" value="${esc(GH.repo)}" autocapitalize="off" autocomplete="off"></label>
-      <label class="field"><span class="small muted">GitHub key</span><input id="ghToken" type="password" placeholder="github_pat_…" autocomplete="off"></label>
-      <button class="btn primary" id="ghSave">Connect</button></div></div>`;
+      <label class="field"><span class="small muted">GitHub key</span><input id="ghToken" type="password" placeholder="github_pat_…" autocomplete="off"></label></div>
+    <div class="btns"><button class="btn primary" id="ghSave">Connect</button></div></div>`;
 }
-loadAll().catch(e => welcome(e.message));
+
+// open a stock from a notification link (?m=PSX&s=LUCK) or a message from the service worker
+function openFromUrl(u){
+  const q = new URL(u, location.href).searchParams, m = q.get("m"), s = q.get("s");
+  if (m && CFG && CFG.markets[m] && m !== market){ market = m; LS.set("ss_market", market); }
+  if (CFG) render();
+  if (s){ showView("home"); openPick(s.toUpperCase()); }
+}
+if ("serviceWorker" in navigator){
+  navigator.serviceWorker.addEventListener("message", e => { if (e.data && e.data.open) openFromUrl(e.data.open); });
+  if (location.protocol === "https:") swReg().catch(() => {});
+}
+loadAll().then(() => {
+  if (location.search){ openFromUrl(location.href); history.replaceState(null, "", location.pathname); }
+}).catch(e => welcome(e.message));
 </script>
 </body>
 </html>
